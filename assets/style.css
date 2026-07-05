@@ -72,3 +72,5 @@
 .donation-card.wood-card h3,.donation-card.wood-card p{color:white;}
 .donation-card.wood-card .icon{background:rgba(255,255,255,.18);}
 @media(max-width:900px){.donation-card{min-height:auto}.person img.riccardo-photo{object-position:center 12%;}}
+
+.community-card{position:relative;overflow:hidden}.community-card:before{content:"";position:absolute;inset:-60px auto auto -60px;width:150px;height:150px;background:rgba(37,211,102,.16);border-radius:50%;filter:blur(2px)}.community-card .btn{position:relative;z-index:1}
