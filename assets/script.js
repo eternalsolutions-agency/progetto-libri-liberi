@@ -1,6 +1,6 @@
 const toggle=document.querySelector('.mobile-toggle');const menu=document.querySelector('.menu');if(toggle&&menu){toggle.addEventListener('click',()=>menu.classList.toggle('open'))}
 const counters=document.querySelectorAll('[data-count]');let counted=false;function countUp(){if(counted)return;const stats=document.querySelector('.stats');if(!stats)return;const r=stats.getBoundingClientRect();if(r.top<innerHeight-80){counted=true;counters.forEach(el=>{const target=+el.dataset.count;let n=0;const step=Math.max(1,Math.ceil(target/42));const t=setInterval(()=>{n+=step;if(n>=target){n=target;clearInterval(t)}el.textContent=n},35)})}}addEventListener('scroll',countUp);countUp();
-const lightbox=document.createElement('div');lightbox.className='lightbox';lightbox.innerHTML='<img alt="Foto Rifugio Libero">';document.body.appendChild(lightbox);document.querySelectorAll('.gallery img').forEach(img=>{img.addEventListener('click',()=>{lightbox.querySelector('img').src=img.src;lightbox.classList.add('open')})});lightbox.addEventListener('click',()=>lightbox.classList.remove('open'));
+const lightbox=document.createElement('div');lightbox.className='lightbox';lightbox.innerHTML='<img alt="Foto Progetto Libri Liberi">';document.body.appendChild(lightbox);document.querySelectorAll('.gallery img').forEach(img=>{img.addEventListener('click',()=>{lightbox.querySelector('img').src=img.src;lightbox.classList.add('open')})});lightbox.addEventListener('click',()=>lightbox.classList.remove('open'));
 const io=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('show')})},{threshold:.12});document.querySelectorAll('.reveal,.card,.section-title').forEach(el=>io.observe(el));
 
 const mapEl=document.querySelector('.fake-map');const listEl=document.querySelector('.locations');
@@ -24,8 +24,9 @@ function selectLoc(i){
  if(selectedLocation){selectedLocation.innerHTML=`<strong>${loc.name}</strong><br><span>${loc.address}</span><br><a class="btn btn-blue" style="margin-top:12px;padding:10px 14px" target="_blank" rel="noopener" href="${mapsUrl(loc.address)}">Apri indicazioni</a>`}
 }
 if(mapEl&&listEl){
+ const legend=document.createElement('div');legend.className='map-legend';legend.innerHTML='<span>📍</span> Casette Progetto Libri Liberi';mapEl.appendChild(legend);
  locations.forEach((loc,i)=>{
-  const pin=document.createElement('button');pin.className='pin';pin.type='button';pin.style.left=loc.x+'%';pin.style.top=loc.y+'%';pin.dataset.loc=i;pin.title=loc.name;pin.innerHTML='🏡';pin.addEventListener('click',()=>selectLoc(i));mapEl.appendChild(pin);
+  const pin=document.createElement('button');pin.className='pin';pin.type='button';pin.style.left=loc.x+'%';pin.style.top=loc.y+'%';pin.dataset.loc=i;pin.title=loc.name;pin.innerHTML='<img src="assets/img/logo.png" alt="Casetta Progetto Libri Liberi">';pin.addEventListener('click',()=>selectLoc(i));mapEl.appendChild(pin);
   const card=document.createElement('div');card.className='loc';card.dataset.loc=i;card.innerHTML=`<div><strong>${loc.name}</strong><small>${loc.address}</small></div><div class="loc-actions"><button type="button">Vedi</button><a target="_blank" rel="noopener" href="${mapsUrl(loc.address)}">Indicazioni</a></div>`;card.querySelector('button').addEventListener('click',()=>selectLoc(i));listEl.appendChild(card);
  });
  selectLoc(0);

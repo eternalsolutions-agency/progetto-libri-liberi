@@ -55,7 +55,7 @@
 }
 
 
-/* Rifugio Libero v1.0 refinements */
+/* Progetto Libri Liberi v1.0 refinements */
 .person img.riccardo-photo{object-position:center 16%;}
 .person img.simone-photo{object-position:center center;}
 .person{display:flex;flex-direction:column;height:100%;}
@@ -74,3 +74,226 @@
 @media(max-width:900px){.donation-card{min-height:auto}.person img.riccardo-photo{object-position:center 12%;}}
 
 .community-card{position:relative;overflow:hidden}.community-card:before{content:"";position:absolute;inset:-60px auto auto -60px;width:150px;height:150px;background:rgba(37,211,102,.16);border-radius:50%;filter:blur(2px)}.community-card .btn{position:relative;z-index:1}
+
+
+/* Progetto Libri Liberi - restyling nuovo logo */
+:root{--blue:#3d4f5d;--sky:#6aa6c8;--wood:#8b4f27;--wood2:#6b3e22;--cream:#fbf2df;--paper:#fffaf0;}
+.brand img{width:64px;height:64px;border-radius:18px;background:#fff6e6;padding:5px;box-shadow:0 10px 24px rgba(59,34,13,.12)}
+.brand span{font-size:1rem;line-height:1.05;max-width:150px;}
+.clean-hero{background:radial-gradient(circle at 82% 20%,rgba(106,166,200,.18),transparent 28%),linear-gradient(135deg,#fff8eb 0%,#f5dfbd 48%,#fffdf6 100%)}
+.hero-copy .eyebrow.dark{margin-bottom:18px;color:#3d4f5d;background:rgba(255,250,240,.88)}
+.hero-copy h1{margin-top:0;color:#324454;letter-spacing:-.04em}
+.hero-claim{font-family:Georgia,serif!important;font-size:clamp(1.25rem,2vw,1.75rem)!important;color:#7a4927!important;margin:0 0 12px!important;font-weight:700;}
+.brand-new-logo{background:linear-gradient(145deg,#fffaf0,#f6e3bf);box-shadow:0 26px 80px rgba(59,34,13,.18);transform:rotate(.7deg)}
+.brand-new-logo img{width:min(480px,100%);filter:drop-shadow(0 16px 20px rgba(72,39,18,.10))}
+.brand-new-logo p{color:#3d4f5d!important;font-size:1.05rem;letter-spacing:.02em}
+.home-cta{border:1px solid rgba(61,79,93,.12)}
+.home-cta strong{color:#324454!important}.home-cta small{color:#62442f!important}
+.home-cta.donate{background:linear-gradient(135deg,#fffaf0,#f8dfa9)}
+.home-cta.adopt{background:linear-gradient(135deg,#fffaf0,#e7c08f)}
+.home-cta.partner{background:linear-gradient(135deg,#eef8ff,#d7edf5)}
+.page-hero{background:linear-gradient(135deg,rgba(61,79,93,.94),rgba(111,63,30,.84)),url('img/casetta-4.jpeg') center/cover}
+.footer{background:linear-gradient(135deg,#26333d,#2d1b10)}
+.float-wa{background:linear-gradient(135deg,#25d366,#128c7e)}
+@media(max-width:560px){.brand span{display:block;font-size:.8rem;max-width:95px}.brand img{width:54px;height:54px}.hero-copy h1{font-size:2.85rem}.hero-claim{font-size:1.25rem!important}}
+
+/* v2 - sfondo legno + mappa stile Google Maps */
+body{
+  background:
+    linear-gradient(90deg, rgba(97,55,28,.12) 0 1px, transparent 1px 100%),
+    linear-gradient(180deg, rgba(255,255,255,.20), rgba(255,244,220,.30)),
+    repeating-linear-gradient(90deg,
+      #c98b4d 0px,#d39a5b 36px,#b9783d 72px,#d6a166 112px,#a96733 152px);
+  background-size: 64px 100%, 100% 100%, 320px 100%;
+  background-attachment: fixed;
+}
+body:before{
+  opacity:.16;
+  background-image:
+    radial-gradient(ellipse at 20% 18%, rgba(80,42,18,.24) 0 8px, transparent 9px),
+    radial-gradient(ellipse at 70% 70%, rgba(80,42,18,.18) 0 11px, transparent 12px),
+    linear-gradient(90deg, rgba(70,36,14,.22) 1px, transparent 1px);
+  background-size: 190px 90px, 260px 120px, 160px 100%;
+}
+.nav{background:rgba(255,247,232,.84);box-shadow:0 8px 26px rgba(59,34,13,.10)}
+.section:not(.soft) .card,
+.stat,.map-toolbar,.map-selected,.loc,.form input,.form select,.form textarea{
+  background:rgba(255,250,240,.94);
+}
+.clean-hero{
+  background:
+    radial-gradient(circle at 82% 20%,rgba(106,166,200,.18),transparent 28%),
+    linear-gradient(135deg,rgba(255,248,235,.92),rgba(245,223,189,.9) 48%,rgba(255,253,246,.92)),
+    repeating-linear-gradient(90deg,#c88a4d 0,#d9a86b 46px,#b8733b 95px,#d19a5d 148px);
+}
+.soft{
+  background:rgba(255,246,225,.62);
+  backdrop-filter: blur(2px);
+}
+.footer{margin-top:0;}
+
+.enhanced-map{
+  min-height:680px;
+  border:10px solid #fff8ea;
+  background:
+    /* parchi */
+    radial-gradient(circle at 16% 20%, #bfe4bf 0 10%, transparent 11%),
+    radial-gradient(circle at 82% 16%, #bde5c3 0 12%, transparent 13%),
+    radial-gradient(circle at 78% 82%, #b5dfbd 0 15%, transparent 16%),
+    /* fiume */
+    linear-gradient(126deg, transparent 0 44%, rgba(139,203,231,.9) 45% 48%, transparent 49%),
+    /* quartieri */
+    linear-gradient(0deg,#f4f1e7,#f4f1e7);
+  position:relative;
+}
+.enhanced-map:before{
+  content:"";position:absolute;inset:0;opacity:1;
+  background:
+    /* strade grandi */
+    linear-gradient(32deg, transparent 0 47%, #fff 47.4% 49.8%, #d6d1c4 50% 50.6%, transparent 51%),
+    linear-gradient(96deg, transparent 0 39%, #fff 39.3% 41.8%, #d6d1c4 42% 42.6%, transparent 43%),
+    linear-gradient(151deg, transparent 0 34%, #fff 34.3% 36.5%, #d6d1c4 36.8% 37.4%, transparent 38%),
+    /* strade piccole */
+    repeating-linear-gradient(0deg, transparent 0 76px, rgba(255,255,255,.85) 77px 83px, transparent 84px 150px),
+    repeating-linear-gradient(90deg, transparent 0 92px, rgba(255,255,255,.86) 93px 99px, transparent 100px 170px);
+  background-size:100% 100%,100% 100%,100% 100%,100% 100%,100% 100%;
+}
+.enhanced-map:after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;
+  background-image:linear-gradient(90deg, rgba(174,169,158,.35) 1px, transparent 1px),linear-gradient(rgba(174,169,158,.25) 1px, transparent 1px);
+  background-size:86px 86px;
+}
+.map-compass{
+  background:white;color:#324454;border-radius:14px;box-shadow:0 8px 20px rgba(0,0,0,.14);
+}
+.map-legend{
+  position:absolute;right:22px;bottom:22px;z-index:6;background:white;border-radius:14px;padding:10px 12px;font-size:.84rem;font-weight:900;color:#324454;box-shadow:0 8px 22px rgba(0,0,0,.14);display:flex;gap:8px;align-items:center;
+}
+.pin{
+  width:54px;height:54px;border-radius:50% 50% 50% 8px;
+  transform:translate(-50%,-50%) rotate(-45deg);
+  background:#fff;border:3px solid #3d4f5d;box-shadow:0 12px 24px rgba(0,0,0,.22);padding:6px;overflow:hidden;
+}
+.pin img{width:100%;height:100%;object-fit:cover;border-radius:50%;transform:rotate(45deg);background:#fff7e6;}
+.pin:hover,.pin.active{
+  transform:translate(-50%,-50%) rotate(-45deg) scale(1.16);
+  background:#fff;border-color:#8b4f27;box-shadow:0 16px 32px rgba(0,0,0,.28);
+}
+.pin.hidden{display:none!important;}
+.map-selected{
+  border-radius:18px;background:#fff;box-shadow:0 14px 30px rgba(0,0,0,.10);border:0;
+}
+.loc{background:#fff;border:0;box-shadow:0 8px 22px rgba(0,0,0,.08)}
+.loc:hover,.loc.active{border-color:transparent;box-shadow:0 12px 28px rgba(0,0,0,.13)}
+.loc a{background:#3d4f5d}.loc button{background:#f1dcc0;color:#5f341c}
+@media(max-width:900px){.enhanced-map{min-height:520px}.map-legend{left:18px;right:auto;bottom:18px}.pin{width:46px;height:46px}}
+
+/* v3 - texture legno reale + effetto incisione */
+body{
+  background:
+    linear-gradient(180deg,rgba(255,248,235,.88),rgba(255,248,235,.80)),
+    url('img/wood-texture.png') center/cover fixed;
+}
+body:before{
+  opacity:.07;
+  background-image:url('img/wood-texture.png');
+  background-size:cover;
+  background-position:center;
+  filter:contrast(1.1) saturate(.75);
+}
+.nav{
+  background:rgba(255,247,232,.86);
+  border-bottom:1px solid rgba(90,48,20,.16);
+}
+.clean-hero{
+  background:
+    radial-gradient(circle at 78% 18%,rgba(255,255,255,.55),transparent 28%),
+    linear-gradient(135deg,rgba(255,248,235,.92),rgba(245,223,189,.86)),
+    url('img/wood-texture.png') center/cover fixed;
+}
+.page-hero{
+  position:relative;
+}
+.page-hero:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,rgba(61,79,93,.82),rgba(95,52,28,.74)),url('img/wood-texture.png') center/cover;
+  opacity:.92;
+}
+.page-hero .container{position:relative;z-index:1}
+.card,.stat,.map-panel,.map-toolbar,.map-selected,.loc,.hero-logo-card,.home-cta,.donation-card,.person,.footer-grid > div{
+  position:relative;
+}
+.card:not(.wood-card),.stat,.map-panel,.map-toolbar,.map-selected,.loc,.hero-logo-card,.home-cta,.donation-card:not(.wood-card),.person{
+  background:rgba(255,250,240,.92);
+  box-shadow:0 18px 52px rgba(59,34,13,.16), inset 0 1px 0 rgba(255,255,255,.68);
+}
+.wood-card,
+.btn-primary,
+.cta-mini{
+  background:
+    linear-gradient(135deg,rgba(139,79,39,.92),rgba(95,52,28,.94)),
+    url('img/wood-texture.png') center/cover!important;
+  box-shadow:0 18px 42px rgba(59,34,13,.22), inset 0 1px 0 rgba(255,228,180,.25);
+}
+.section-title h2,.hero-copy h1,.page-hero h1{
+  text-shadow:0 2px 0 rgba(255,255,255,.55), 0 8px 18px rgba(75,42,18,.10);
+}
+.wood-engraved,
+.section-title span,
+.eyebrow.dark{
+  box-shadow:inset 0 2px 5px rgba(67,34,12,.16), inset 0 -1px 0 rgba(255,255,255,.56);
+}
+.btn,.home-cta,.donation-card,.card{
+  transition:transform .25s ease, box-shadow .25s ease, filter .25s ease;
+}
+.btn:hover,.home-cta:hover,.donation-card:hover,.card:hover{
+  filter:saturate(1.03);
+}
+.home-cta:after,.donation-card:after,.card:not(.wood-card):after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:linear-gradient(125deg,transparent 0 42%,rgba(255,255,255,.24) 48%,transparent 55%);
+  opacity:0;
+  transition:opacity .25s ease;
+}
+.home-cta:hover:after,.donation-card:hover:after,.card:hover:after{opacity:1}
+.footer{
+  background:
+    linear-gradient(135deg,rgba(38,51,61,.94),rgba(45,27,16,.96)),
+    url('img/wood-texture.png') center/cover;
+}
+
+.btn-whatsapp{background:linear-gradient(135deg,#25d366,#128c7e);color:#fff}.wa-dot{font-size:1.1rem;color:#fff;filter:drop-shadow(0 0 6px rgba(255,255,255,.4))}.float-wa{display:inline-flex;align-items:center;gap:8px}.news-grid .news-card{display:flex;flex-direction:column;min-height:300px;transition:.25s ease}.news-grid .news-card:hover{transform:translateY(-6px);box-shadow:0 28px 75px rgba(59,34,13,.24)}.news-date{display:inline-flex;align-self:flex-start;background:#f1d6ac;color:#063d63;border-radius:999px;padding:7px 12px;font-weight:900;font-size:.82rem;margin-bottom:12px}.news-card .btn{margin-top:auto}.news-feature{margin-top:28px;display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:center;background:linear-gradient(135deg,rgba(255,250,240,.92),rgba(241,214,172,.88))}.news-feature img{border-radius:22px;box-shadow:0 20px 50px rgba(59,34,13,.18);max-height:360px;object-fit:cover;width:100%}@media(max-width:900px){.news-feature{grid-template-columns:1fr}}
+
+/* WhatsApp icon integration */
+.wa-icon{
+  width:22px;
+  height:22px;
+  display:inline-block;
+  vertical-align:middle;
+  object-fit:cover;
+  border-radius:7px;
+  margin-right:8px;
+  box-shadow:0 4px 12px rgba(0,0,0,.18);
+}
+.float-wa,
+.btn-whatsapp,
+.community-card .btn{
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.float-wa .wa-icon{
+  width:24px;
+  height:24px;
+  border-radius:8px;
+}
+.menu a[href="news.html"]{
+  font-weight:800;
+}
