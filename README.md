@@ -1,7 +1,10 @@
 # Progetto Libri Liberi
 
-Sito statico multipagina pronto per GitHub e Vercel.
+Sito statico con moduli gestiti da una Vercel Function e invio email tramite Brevo.
 
-Dominio previsto: progettolibriliberi.it
+## Variabili d'ambiente richieste su Vercel
 
-Payoff: Libri, giochi e condivisione.
+- `BREVO_API_KEY`: chiave API Brevo
+- `CONTACT_EMAIL`: `info@progettolibriliberi.it`
+
+Dopo aver caricato i file su GitHub, eseguire un nuovo deploy su Vercel. Il mittente `info@progettolibriliberi.it` deve essere verificato in Brevo.

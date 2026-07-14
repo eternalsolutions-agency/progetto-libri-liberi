@@ -32,3 +32,49 @@ if(mapEl&&listEl){
  selectLoc(0);
  if(mapSearch){mapSearch.addEventListener('input',()=>{const q=mapSearch.value.toLowerCase().trim();locations.forEach((loc,i)=>{const show=(loc.name+' '+loc.address).toLowerCase().includes(q);document.querySelectorAll(`[data-loc="${i}"]`).forEach(el=>el.classList.toggle('hidden',!show))})})}
 }
+
+// Invio dei moduli tramite Vercel Function + Brevo.
+document.querySelectorAll('form[data-contact-form]').forEach(form => {
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const button = form.querySelector('button[type="submit"]');
+    const status = form.querySelector('.form-status');
+    const originalText = button?.dataset.originalText || button?.textContent || 'Invia';
+
+    if (!form.reportValidity()) return;
+    if (button) {
+      button.disabled = true;
+      button.textContent = 'Invio in corso…';
+    }
+    if (status) {
+      status.className = 'form-status is-loading';
+      status.textContent = 'Stiamo inviando la tua richiesta…';
+    }
+
+    const payload = Object.fromEntries(new FormData(form).entries());
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.ok) throw new Error(result.message || 'Invio non riuscito.');
+      if (status) {
+        status.className = 'form-status is-success';
+        status.textContent = result.message || 'Grazie! La tua richiesta è stata inviata.';
+      }
+      form.reset();
+    } catch (error) {
+      if (status) {
+        status.className = 'form-status is-error';
+        status.textContent = error.message || 'Si è verificato un errore. Riprova tra poco.';
+      }
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.textContent = originalText;
+      }
+    }
+  });
+});
