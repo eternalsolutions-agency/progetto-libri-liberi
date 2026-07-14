@@ -1,4 +1,5 @@
-const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+const BREVO_EMAIL_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+const BREVO_CONTACTS_ENDPOINT = 'https://api.brevo.com/v3/contacts';
 
 function escapeHtml(value = '') {
   return String(value)
@@ -13,6 +14,29 @@ function clean(value, max = 3000) {
   return String(value || '').trim().slice(0, max);
 }
 
+function splitName(fullName = '') {
+  const parts = clean(fullName, 150).split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] || '',
+    lastName: parts.slice(1).join(' '),
+  };
+}
+
+async function brevoRequest(url, apiKey, payload) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+      'api-key': apiKey,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  return { response, data };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -21,12 +45,19 @@ module.exports = async function handler(req, res) {
 
   const apiKey = process.env.BREVO_API_KEY;
   const contactEmail = process.env.CONTACT_EMAIL || 'info@progettolibriliberi.it';
+  const listId = Number.parseInt(process.env.BREVO_LIST_ID || '', 10);
+
   if (!apiKey) {
     console.error('BREVO_API_KEY non configurata');
     return res.status(500).json({ ok: false, message: 'Servizio email non configurato.' });
   }
 
-  const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+  let body = {};
+  try {
+    body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+  } catch {
+    return res.status(400).json({ ok: false, message: 'Dati del modulo non validi.' });
+  }
 
   // Honeypot: i visitatori reali non compilano questo campo.
   if (clean(body.website, 200)) {
@@ -35,7 +66,7 @@ module.exports = async function handler(req, res) {
 
   const formType = clean(body.form_type, 100) || 'Contatto dal sito';
   const name = clean(body.nome || body.referente || body.azienda, 150);
-  const email = clean(body.email, 254);
+  const email = clean(body.email, 254).toLowerCase();
   const phone = clean(body.telefono, 80);
   const company = clean(body.azienda, 180);
   const contactPerson = clean(body.referente, 180);
@@ -50,6 +81,46 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ ok: false, message: 'Inserisci un indirizzo email valido.' });
   }
 
+  const displayName = contactPerson || name || company || email;
+  const { firstName, lastName } = splitName(displayName);
+
+  // 1) Crea o aggiorna il contatto in Brevo.
+  // Se BREVO_LIST_ID è configurata, il contatto viene inserito nella lista che avvia l'automazione.
+  const contactPayload = {
+    email,
+    updateEnabled: true,
+    attributes: {
+      FIRSTNAME: firstName,
+      LASTNAME: lastName,
+    },
+  };
+  if (Number.isInteger(listId) && listId > 0) {
+    contactPayload.listIds = [listId];
+  }
+
+  try {
+    const { response: contactResponse, data: contactData } = await brevoRequest(
+      BREVO_CONTACTS_ENDPOINT,
+      apiKey,
+      contactPayload,
+    );
+
+    if (!contactResponse.ok) {
+      console.error('Errore Brevo contatto:', contactResponse.status, contactData);
+      return res.status(502).json({
+        ok: false,
+        message: 'Non è stato possibile registrare il contatto. Riprova tra poco.',
+      });
+    }
+  } catch (error) {
+    console.error('Errore sincronizzazione contatto:', error);
+    return res.status(500).json({
+      ok: false,
+      message: 'Errore temporaneo durante la registrazione del contatto.',
+    });
+  }
+
+  // 2) Invia la notifica interna a info@progettolibriliberi.it.
   const rows = [
     ['Modulo', formType],
     ['Nome', name],
@@ -69,10 +140,10 @@ module.exports = async function handler(req, res) {
       <td style="padding:10px;border-bottom:1px solid #eadfce;white-space:pre-wrap">${escapeHtml(value)}</td>
     </tr>`).join('');
 
-  const payload = {
+  const emailPayload = {
     sender: { name: 'Progetto Libri Liberi', email: contactEmail },
     to: [{ email: contactEmail, name: 'Progetto Libri Liberi' }],
-    replyTo: { email, name: name || contactPerson || company || email },
+    replyTo: { email, name: displayName },
     subject: `${formType} - progettolibriliberi.it`,
     htmlContent: `<!doctype html><html><body style="margin:0;background:#f7f1e8;font-family:Arial,sans-serif;color:#2d241e">
       <div style="max-width:680px;margin:24px auto;background:#fff;border-radius:14px;overflow:hidden;border:1px solid #decdb5">
@@ -83,23 +154,17 @@ module.exports = async function handler(req, res) {
   };
 
   try {
-    const response = await fetch(BREVO_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        'api-key': apiKey,
-      },
-      body: JSON.stringify(payload),
-    });
-    const data = await response.json().catch(() => ({}));
+    const { response, data } = await brevoRequest(BREVO_EMAIL_ENDPOINT, apiKey, emailPayload);
     if (!response.ok) {
-      console.error('Errore Brevo:', response.status, data);
-      return res.status(502).json({ ok: false, message: 'Non è stato possibile inviare il messaggio. Riprova tra poco.' });
+      console.error('Errore Brevo email:', response.status, data);
+      return res.status(502).json({ ok: false, message: 'Il contatto è stato registrato, ma la notifica non è partita. Riprova tra poco.' });
     }
-    return res.status(200).json({ ok: true, message: 'Grazie! La tua richiesta è stata inviata correttamente.' });
+    return res.status(200).json({
+      ok: true,
+      message: 'Grazie! La tua richiesta è stata inviata correttamente. Controlla anche la tua email.',
+    });
   } catch (error) {
-    console.error('Errore invio:', error);
+    console.error('Errore invio email:', error);
     return res.status(500).json({ ok: false, message: 'Errore temporaneo durante l’invio. Riprova tra poco.' });
   }
 };
