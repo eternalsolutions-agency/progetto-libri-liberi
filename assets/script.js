@@ -15,6 +15,22 @@ const locations=[
  {name:'Vicopisano - Cucigliana',address:'Bar-pizzeria Sottomonte, Cucigliana, Vicopisano, Pisa',x:83,y:49,img:'casetta.jpeg'},
  {name:'Orentano',address:'Piazza S. Lorenzo, Orentano, Pisa',x:78,y:27,img:'casetta-3.jpeg'},
  {name:'Terricciola',address:'Via del Chianti e parco giochi di Morrona, Terricciola, Pisa',x:41,y:78,img:'casetta-4.jpeg'}
+,
+ {name:'CAAF ACLI Pisa',address:'Via Francesco da Buti 20, Pisa',x:46,y:33,img:'casetta-3.jpeg'},
+ {name:'Ghezzano',address:'Piazza Tempesti, Ghezzano, Pisa',x:52,y:31,img:'casetta-4.jpeg'},
+ {name:'Pasticceria Mannocci Titignano',address:'Titignano, Pisa',x:60,y:52,img:'casetta-5.jpeg'},
+ {name:'Bibliocabina San Giuliano Terme',address:'Largo Collodi, San Giuliano Terme, Pisa',x:44,y:22,img:'casetta1.jpeg'},
+ {name:'Farmacia Latignano',address:'Via Risorgimento 33, Latignano, Pisa',x:68,y:58,img:'casetta-6.jpeg'},
+ {name:'Frigo Libro Ponsacco',address:'Piazza Giovanni Paolo II, Ponsacco, Pisa',x:34,y:86,img:'casetta-8.jpeg'},
+ {name:'Crespina',address:'Parco Via XXI Aprile 29, Crespina, Pisa',x:37,y:82,img:'casetta.jpeg'},
+ {name:'Calci',address:'Parco della Fonderia, Calci, Pisa',x:73,y:18,img:'casetta-3.jpeg'},
+ {name:'Bibliocabina San Piero a Grado',address:'Circolo ACLI, San Piero a Grado, Pisa',x:12,y:53,img:'casetta-4.jpeg'},
+ {name:'Agenzia Immobiliare San Giorgio',address:'Marina di Pisa',x:10,y:70,img:'casetta-5.jpeg'},
+ {name:'Bagno Gabbiano',address:'Bagno Gabbiano, Marina di Pisa',x:11,y:72,img:'casetta-6.jpeg'},
+ {name:'Pappiana',address:'Via Montessori, Pappiana, Pisa',x:57,y:40,img:'casetta1.jpeg'},
+ {name:'Metato',address:'Piazza Berlinguer, Metato, Pisa',x:49,y:14,img:'casetta-8.jpeg'},
+ {name:'Mezzana',address:'Via Traversagna, Mezzana, Pisa',x:61,y:36,img:'casetta.jpeg'},
+
 ];
 function mapsUrl(address){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(address)}
 function selectLoc(i){
