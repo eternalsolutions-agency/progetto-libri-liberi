@@ -442,3 +442,8 @@ body:before{
 .coming-soon{display:inline-flex;align-items:center;padding:10px 14px;border-radius:999px;background:#f1eee8;font-weight:700;font-size:.92rem}
 .footer .credits a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 @media(max-width:760px){.partner-profile{grid-template-columns:1fr;padding:24px}.partner-brand{min-height:130px}.partner-showcase{margin-top:34px}}
+
+/* Logo partner RP Digital */
+.partner-brand .partner-logo{display:block;width:100%;max-width:360px;height:auto;object-fit:contain;margin:0 auto;border-radius:10px}
+.partner-brand a{display:block}
+@media (max-width:760px){.partner-brand .partner-logo{max-width:300px}}
