@@ -425,3 +425,20 @@ body:before{
 .form-status.is-success{background:#eaf7ee;color:#1d6b35;border:1px solid #b7dec2}
 .form-status.is-error{background:#fff0ef;color:#9b2f27;border:1px solid #edc2be}
 .form button[disabled]{opacity:.7;cursor:wait;transform:none!important}
+
+
+/* Partner già coinvolti */
+.partner-showcase{margin-top:44px;margin-bottom:28px}
+.partner-showcase-head{max-width:760px;margin-bottom:22px}
+.partner-showcase-head h2{margin:8px 0 10px}
+.partner-profile{display:grid;grid-template-columns:220px 1fr;gap:34px;align-items:center;padding:32px}
+.partner-brand{display:flex;align-items:center;justify-content:center;min-height:170px;border-radius:22px;background:linear-gradient(145deg,#f5f8fa,#fff);border:1px solid rgba(0,0,0,.07)}
+.partner-brand a{text-decoration:none;display:flex;align-items:baseline;gap:6px;color:#17242d}
+.partner-brand strong{font-size:3.1rem;line-height:1;font-weight:900;letter-spacing:-.08em}
+.partner-brand span{font-size:1.35rem;font-weight:700}
+.partner-copy h3{font-size:1.75rem;margin:0 0 12px}
+.partner-copy p{margin:0 0 12px}
+.partner-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:20px}
+.coming-soon{display:inline-flex;align-items:center;padding:10px 14px;border-radius:999px;background:#f1eee8;font-weight:700;font-size:.92rem}
+.footer .credits a{color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:760px){.partner-profile{grid-template-columns:1fr;padding:24px}.partner-brand{min-height:130px}.partner-showcase{margin-top:34px}}
