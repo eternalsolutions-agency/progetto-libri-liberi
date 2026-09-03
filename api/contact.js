@@ -112,6 +112,7 @@ module.exports = async function handler(req, res) {
     150,
   );
 
+  const surname = clean(body.cognome, 150);
   const email = clean(body.email, 254).toLowerCase();
   const phone = clean(body.telefono, 80);
   const company = clean(body.azienda, 180);
@@ -149,7 +150,7 @@ module.exports = async function handler(req, res) {
   ].filter(Boolean).join('\n') || 'Adesione dal sito';
 
   const displayName =
-    contactPerson || name || company || email;
+    contactPerson || [name, surname].filter(Boolean).join(' ') || company || email;
 
   const { firstName, lastName } = splitName(displayName);
 
@@ -239,6 +240,7 @@ module.exports = async function handler(req, res) {
           if (f.includes('custode regionale')) return 'custode_regionale';
           if (f.includes('custode locale')) return 'custode_locale';
           if (f.includes('volont')) return 'volontario';
+          if (f.includes('collabor')) return 'collaboratore';
           if (f.includes('casetta')) return 'richiesta_casetta';
           if (f.includes('community gratuita')) return 'adesione_gratuita';
           if (f.includes('sostenitore')) return 'sostenitore';
@@ -247,6 +249,7 @@ module.exports = async function handler(req, res) {
           return 'informazioni';
         })(),
         nome: name || contactPerson || company,
+        cognome: surname || null,
         email,
         telefono: phone || null,
         oggetto: requestType || formType,
@@ -278,6 +281,7 @@ module.exports = async function handler(req, res) {
   const rows = [
     ['Modulo', formType],
     ['Nome', name],
+    ['Cognome', surname],
     ['Azienda', company],
     ['Referente', contactPerson],
     ['Email', email],
