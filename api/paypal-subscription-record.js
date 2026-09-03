@@ -1,12 +1,12 @@
 const SUPABASE_URL='https://axudbwobzmmrqpdnbamp.supabase.co';
 
 const VALID_PLANS={
-  'P-93G84049M39763023NKMWXIQ':{tipologia:'sostenitore',piano:'mensile',importo:3.99},
-  'P-35292608CJ9955259NKMXPBQ':{tipologia:'sostenitore',piano:'annuale',importo:39.90},
-  'P-45885765J93513534NKMXPBY':{tipologia:'partner',piano:'mensile',importo:19.90},
-  'P-7S305652AE760404ENKMXPCA':{tipologia:'partner',piano:'annuale',importo:189},
-  'P-83G22360TS406391YNKMXPCA':{tipologia:'sponsor',piano:'mensile',importo:49.90},
-  'P-1CR59062UF415371RNKMXPCI':{tipologia:'sponsor',piano:'annuale',importo:489}
+  [process.env.PAYPAL_PLAN_SOSTENITORE_MENSILE||'P-93G84049M39763023NKMWXIQ']:{tipologia:'sostenitore',piano:'mensile',importo:3.99},
+  [process.env.PAYPAL_PLAN_SOSTENITORE_ANNUALE||'P-35292608CJ9955259NKMXPBQ']:{tipologia:'sostenitore',piano:'annuale',importo:39.90},
+  [process.env.PAYPAL_PLAN_PARTNER_MENSILE||'P-45885765J93513534NKMXPBY']:{tipologia:'partner',piano:'mensile',importo:19.90},
+  [process.env.PAYPAL_PLAN_PARTNER_ANNUALE||'P-7S305652AE760404ENKMXPCA']:{tipologia:'partner',piano:'annuale',importo:189},
+  [process.env.PAYPAL_PLAN_SPONSOR_MENSILE||'P-83G22360TS406391YNKMXPCA']:{tipologia:'sponsor',piano:'mensile',importo:49.90},
+  [process.env.PAYPAL_PLAN_SPONSOR_ANNUALE||'P-1CR59062UF415371RNKMXPCI']:{tipologia:'sponsor',piano:'annuale',importo:489}
 };
 
 function paypalBase(){
