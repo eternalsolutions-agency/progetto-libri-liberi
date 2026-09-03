@@ -120,8 +120,11 @@ module.exports = async function handler(req, res) {
   const message = clean(body.messaggio, 5000);
   const privacy = clean(body.consenso_privacy, 50);
   const territory = clean(body.territorio, 180);
+  const comune = clean(body.comune, 120);
+  const provincia = clean(body.provincia, 80);
+  const partecipazione = clean(body.partecipazione, 250);
 
-  if (!email || !message || !privacy) {
+  if (!email || !privacy) {
     return res.status(400).json({
       ok: false,
       message:
@@ -137,6 +140,13 @@ module.exports = async function handler(req, res) {
       message: 'Inserisci un indirizzo email valido.',
     });
   }
+
+  const effectiveMessage = message || [
+    requestType ? `Adesione/Richiesta: ${requestType}` : '',
+    partecipazione ? `Come vuole partecipare: ${partecipazione}` : '',
+    comune ? `Comune: ${comune}` : '',
+    provincia ? `Provincia: ${provincia}` : ''
+  ].filter(Boolean).join('\n') || 'Adesione dal sito';
 
   const displayName =
     contactPerson || name || company || email;
@@ -240,8 +250,8 @@ module.exports = async function handler(req, res) {
         email,
         telefono: phone || null,
         oggetto: requestType || formType,
-        messaggio: message,
-        regione: territory || null,
+        messaggio: effectiveMessage,
+        regione: territory || provincia || null,
         stato: 'nuova',
       }),
     });
@@ -273,7 +283,10 @@ module.exports = async function handler(req, res) {
     ['Email', email],
     ['Telefono', phone],
     ['Tipo richiesta', requestType],
-    ['Messaggio', message],
+    ['Messaggio', effectiveMessage],
+    ['Comune', comune],
+    ['Provincia', provincia],
+    ['Come vuole partecipare', partecipazione],
     ['Territorio', territory],
     ['Consenso privacy', privacy],
     [
