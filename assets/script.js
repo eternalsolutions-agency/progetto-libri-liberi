@@ -106,7 +106,7 @@ document.querySelectorAll('[data-plan]').forEach(link=>link.addEventListener('cl
  try{
   const cfg=await fetch('/api/gallery').then(r=>r.ok?r.json():Promise.reject());
   if(!cfg.items||!cfg.items.length) return;
-  gallery.innerHTML=cfg.items.map(item=>`<figure class="gallery-item"><img src="${item.image_url}" alt="${item.title||'Progetto Libri Liberi'}" loading="lazy">${item.title?`<figcaption>${item.title}</figcaption>`:''}</figure>`).join('');
+  gallery.innerHTML=cfg.items.map(item=>`<figure class="gallery-item"><img src="${item.immagine_url}" alt="${item.alt_text||item.titolo||'Progetto Libri Liberi'}" loading="lazy">${item.titolo?`<figcaption>${item.titolo}</figcaption>`:''}</figure>`).join('');
   gallery.querySelectorAll('img').forEach(img=>img.addEventListener('click',()=>{lightbox.querySelector('img').src=img.src;lightbox.classList.add('open')}));
  }catch(e){/* fallback statico intenzionale */}
 })();

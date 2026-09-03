@@ -213,7 +213,7 @@ module.exports = async function handler(req, res) {
   // L'email continua a funzionare anche se Supabase non è ancora attivo.
   if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
     try {
-      const sb = await fetch(`${process.env.SUPABASE_URL}/rest/v1/requests`, {
+      const sb = await fetch(`${process.env.SUPABASE_URL}/rest/v1/richieste`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -222,8 +222,24 @@ module.exports = async function handler(req, res) {
           Prefer: 'return=minimal',
         },
         body: JSON.stringify({
-          form_type: formType, name, email, phone, company, contact_person: contactPerson,
-          request_type: requestType, message, territory, status: 'Nuova'
+          tipo: (() => {
+            const f=(formType+' '+requestType).toLowerCase();
+            if(f.includes('custode regionale')) return 'custode_regionale';
+            if(f.includes('custode locale')) return 'custode_locale';
+            if(f.includes('volont')) return 'volontario';
+            if(f.includes('casetta')) return 'richiesta_casetta';
+            if(f.includes('community gratuita')) return 'adesione_gratuita';
+            if(f.includes('sostenitore')) return 'sostenitore';
+            if(f.includes('partner')) return 'partner';
+            if(f.includes('sponsor')) return 'sponsor';
+            return 'informazioni';
+          })(),
+          nome: name || contactPerson || company,
+          email, telefono: phone || null,
+          oggetto: requestType || formType,
+          messaggio: message,
+          regione: territory || null,
+          stato: 'nuova'
         }),
       });
       if (!sb.ok) console.error('Errore salvataggio Supabase:', sb.status, await sb.text());
