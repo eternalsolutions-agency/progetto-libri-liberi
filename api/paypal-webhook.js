@@ -8,8 +8,9 @@ function paypalBase(){
 }
 
 async function accessToken(){
-  const id=process.env.PAYPAL_CLIENT_ID;
-  const secret=process.env.PAYPAL_CLIENT_SECRET;
+  const live=(process.env.PAYPAL_ENV||'sandbox')==='live';
+  const id=live?process.env.PAYPAL_LIVE_CLIENT_ID:process.env.PAYPAL_CLIENT_ID;
+  const secret=live?process.env.PAYPAL_LIVE_CLIENT_SECRET:process.env.PAYPAL_CLIENT_SECRET;
   if(!id||!secret) throw new Error('Credenziali PayPal mancanti');
   const r=await fetch(`${paypalBase()}/v1/oauth2/token`,{
     method:'POST',
