@@ -119,6 +119,7 @@ module.exports = async function handler(req, res) {
   const requestType = clean(body.richiesta, 250);
   const message = clean(body.messaggio, 5000);
   const privacy = clean(body.consenso_privacy, 50);
+  const territory = clean(body.territorio, 180);
 
   if (!email || !message || !privacy) {
     return res.status(400).json({
@@ -208,6 +209,27 @@ module.exports = async function handler(req, res) {
     });
   }
 
+  // Salva anche nel back office Supabase, se configurato.
+  // L'email continua a funzionare anche se Supabase non è ancora attivo.
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    try {
+      const sb = await fetch(`${process.env.SUPABASE_URL}/rest/v1/requests`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({
+          form_type: formType, name, email, phone, company, contact_person: contactPerson,
+          request_type: requestType, message, territory, status: 'Nuova'
+        }),
+      });
+      if (!sb.ok) console.error('Errore salvataggio Supabase:', sb.status, await sb.text());
+    } catch (error) { console.error('Supabase non disponibile:', error); }
+  }
+
   /*
    * 2. Prepara la mail interna destinata al progetto.
    */
@@ -220,6 +242,7 @@ module.exports = async function handler(req, res) {
     ['Telefono', phone],
     ['Tipo richiesta', requestType],
     ['Messaggio', message],
+    ['Territorio', territory],
     ['Consenso privacy', privacy],
     [
       'Data invio',

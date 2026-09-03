@@ -94,3 +94,19 @@ document.querySelectorAll('form[data-contact-form]').forEach(form => {
     }
   });
 });
+
+// Preseleziona il piano gratuito quando si clicca dalla relativa card.
+document.querySelectorAll('[data-plan]').forEach(link=>link.addEventListener('click',()=>{const select=document.querySelector('#membershipPlan');if(select)select.value=link.dataset.plan||'';}));
+
+// Galleria Supabase: viene attivata appena Vercel avrà le variabili pubbliche configurate.
+// In assenza di configurazione rimangono visibili le immagini incluse nel sito.
+(async function loadSupabaseGallery(){
+ const gallery=document.querySelector('[data-supabase-gallery]');
+ if(!gallery) return;
+ try{
+  const cfg=await fetch('/api/gallery').then(r=>r.ok?r.json():Promise.reject());
+  if(!cfg.items||!cfg.items.length) return;
+  gallery.innerHTML=cfg.items.map(item=>`<figure class="gallery-item"><img src="${item.image_url}" alt="${item.title||'Progetto Libri Liberi'}" loading="lazy">${item.title?`<figcaption>${item.title}</figcaption>`:''}</figure>`).join('');
+  gallery.querySelectorAll('img').forEach(img=>img.addEventListener('click',()=>{lightbox.querySelector('img').src=img.src;lightbox.classList.add('open')}));
+ }catch(e){/* fallback statico intenzionale */}
+})();
