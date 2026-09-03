@@ -9,3 +9,28 @@ async function loadPayments(){const el=$('#paymentsList');const {data,error}=awa
 async function loadGallery(){const el=$('#galleryList');const {data,error}=await db.from('galleria').select('*').order('ordine');if(error){el.innerHTML='<p>Impossibile caricare la galleria.</p>';return}el.innerHTML=data.length?data.map(i=>`<article class="admin-photo"><img src="${esc(i.immagine_url)}" alt=""><div><strong>${esc(i.titolo||'Senza titolo')}</strong><small>${esc(i.localita||'')}</small><button data-gallery-delete="${i.id}" data-url="${encodeURIComponent(i.immagine_url)}">Elimina</button></div></article>`).join(''):'<p>Nessuna immagine caricata dal back office.</p>';document.querySelectorAll('[data-gallery-delete]').forEach(b=>b.onclick=async()=>{if(!confirm('Eliminare questa immagine?'))return;const url=decodeURIComponent(b.dataset.url);const marker='/storage/v1/object/public/galleria/';const path=url.includes(marker)?url.split(marker)[1]:null;if(path)await db.storage.from('galleria').remove([decodeURIComponent(path)]);await db.from('galleria').delete().eq('id',b.dataset.galleryDelete);loadGallery()})}
 $('#galleryForm').addEventListener('submit',async e=>{e.preventDefault();const st=$('#galleryStatus'),file=$('#galleryFile').files[0];if(!file)return;st.textContent='Caricamento…';const path=`${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g,'-')}`;const up=await db.storage.from('galleria').upload(path,file,{upsert:false});if(up.error){st.textContent=up.error.message;return}const {data:url}=db.storage.from('galleria').getPublicUrl(path);const {error}=await db.from('galleria').insert({titolo:$('#galleryTitle').value||null,localita:$('#galleryLocation').value||null,descrizione:$('#galleryDescription').value||null,immagine_url:url.publicUrl,alt_text:$('#galleryTitle').value||'Progetto Libri Liberi',pubblicata:$('#galleryPublished').checked});if(error){st.textContent=error.message;return}e.target.reset();$('#galleryPublished').checked=true;st.textContent='Immagine caricata.';loadGallery()});
 document.querySelectorAll('[data-refresh]').forEach(b=>b.onclick=()=>b.dataset.refresh==='richieste'?loadRequests():loadPayments());showSession();
+
+const paypalSetupBtn = document.querySelector('#paypalSetupBtn');
+if (paypalSetupBtn) {
+  paypalSetupBtn.addEventListener('click', async () => {
+    const st = document.querySelector('#paypalSetupStatus');
+    st.textContent = 'Configurazione PayPal Sandbox…';
+    paypalSetupBtn.disabled = true;
+    try {
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) throw new Error('Sessione amministratore scaduta.');
+      const response = await fetch('/api/paypal-setup', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${session.access_token}` }
+      });
+      const data = await response.json();
+      if (!response.ok || !data.ok) throw new Error(data.message || 'Configurazione non riuscita.');
+      st.innerHTML = `Piano pronto.<br><strong>Plan ID:</strong> <code>${esc(data.plan_id)}</code><br><strong>${esc(data.amount)}</strong>`;
+    } catch (error) {
+      st.textContent = error.message || 'Errore PayPal.';
+      st.className = 'form-status is-error';
+    } finally {
+      paypalSetupBtn.disabled = false;
+    }
+  });
+}
