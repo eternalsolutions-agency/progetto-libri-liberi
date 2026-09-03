@@ -1,10 +1,28 @@
-module.exports=async function handler(req,res){
- if(req.method!=='GET') return res.status(405).json({items:[]});
- const url=process.env.SUPABASE_URL, key=process.env.SUPABASE_SERVICE_ROLE_KEY;
- if(!url||!key) return res.status(200).json({items:[]});
- try{
-  const r=await fetch(`${url}/rest/v1/galleria?select=id,titolo,immagine_url,alt_text,ordine&pubblicata=eq.true&order=ordine.asc`,{headers:{apikey:key,Authorization:`Bearer ${key}`}});
-  if(!r.ok) throw new Error('Supabase gallery error');
-  return res.status(200).json({items:await r.json()});
- }catch(e){console.error(e);return res.status(200).json({items:[]});}
+const SUPABASE_URL = 'https://axudbwobzmmrqpdnbamp.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_JHJBoonYn5HFxERyv-RWKA_oKpYsV7W';
+
+module.exports = async function handler(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ items: [] });
+
+  try {
+    const endpoint = `${SUPABASE_URL}/rest/v1/galleria?select=id,titolo,immagine_url,alt_text,ordine&pubblicata=eq.true&order=ordine.asc,created_at.desc`;
+    const response = await fetch(endpoint, {
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`
+      }
+    });
+
+    if (!response.ok) {
+      const details = await response.text();
+      throw new Error(`Supabase gallery error ${response.status}: ${details}`);
+    }
+
+    const items = await response.json();
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(200).json({ items });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ items: [], error: 'gallery_unavailable' });
+  }
 };
