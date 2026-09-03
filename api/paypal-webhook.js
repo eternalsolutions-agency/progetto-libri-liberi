@@ -82,6 +82,26 @@ async function paymentExists(sid,key){
   return Array.isArray(rows)&&rows.length>0;
 }
 
+
+async function saveDiagnostic(key,event,error,req){
+  try{
+    const row={
+      email:'webhook-diagnostic@internal.local',
+      tipologia:'diagnostica',
+      piano:String(event?.event_type||'paypal-webhook'),
+      importo:0,
+      provider:'paypal',
+      provider_subscription_id:(event?.resource?.id||null),
+      provider_transaction_id:(event?.id||null),
+      stato:'errore: '+String(error?.message||error||'errore').slice(0,180),
+      data_inizio:new Date().toISOString()
+    };
+    await supabase('pagamenti','POST',key,row);
+  }catch(diagError){
+    console.error('Impossibile salvare diagnostica webhook:',diagError);
+  }
+}
+
 module.exports=async function(req,res){
   if(req.method!=='POST') return res.status(405).json({ok:false,message:'Metodo non consentito'});
 
@@ -150,6 +170,8 @@ module.exports=async function(req,res){
     return res.status(200).json({ok:true,event:type,subscription_id:sid});
   }catch(e){
     console.error('PayPal webhook:',e);
+    const key=process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if(key) await saveDiagnostic(key,req.body,e,req);
     return res.status(400).json({ok:false,message:e.message||'Webhook error'});
   }
 };
