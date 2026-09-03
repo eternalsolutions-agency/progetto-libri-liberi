@@ -29,7 +29,7 @@ async function pp(path,method,t,body){
 }
 
 module.exports=async function(req,res){
-  if(req.method!=='POST') return res.status(405).json({ok:false,message:'Metodo non consentito'});
+  if(req.method!=='GET') return res.status(405).json({ok:false,message:'Metodo non consentito'});
   try{
     const t=await token();
     const product=await pp('/v1/catalogs/products','POST',t,{
