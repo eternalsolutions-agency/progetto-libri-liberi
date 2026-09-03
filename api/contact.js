@@ -209,41 +209,57 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  // Salva anche nel back office Supabase, se configurato.
-  // L'email continua a funzionare anche se Supabase non è ancora attivo.
-  if (process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    try {
-      const sb = await fetch(`${process.env.SUPABASE_URL}/rest/v1/richieste`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: process.env.SUPABASE_SERVICE_ROLE_KEY,
-          Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
-          Prefer: 'return=minimal',
-        },
-        body: JSON.stringify({
-          tipo: (() => {
-            const f=(formType+' '+requestType).toLowerCase();
-            if(f.includes('custode regionale')) return 'custode_regionale';
-            if(f.includes('custode locale')) return 'custode_locale';
-            if(f.includes('volont')) return 'volontario';
-            if(f.includes('casetta')) return 'richiesta_casetta';
-            if(f.includes('community gratuita')) return 'adesione_gratuita';
-            if(f.includes('sostenitore')) return 'sostenitore';
-            if(f.includes('partner')) return 'partner';
-            if(f.includes('sponsor')) return 'sponsor';
-            return 'informazioni';
-          })(),
-          nome: name || contactPerson || company,
-          email, telefono: phone || null,
-          oggetto: requestType || formType,
-          messaggio: message,
-          regione: territory || null,
-          stato: 'nuova'
-        }),
+  // Registra la richiesta anche nel back office Supabase.
+  // La publishable key e' sicura nel frontend/server pubblico: RLS limita l'accesso al solo INSERT.
+  const supabaseUrl = process.env.SUPABASE_URL || 'https://axudbwobzmmrqpdnbamp.supabase.co';
+  const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY || 'sb_publishable_JHJBoonYn5HFxERyv-RWKA_oKpYsV7W';
+
+  try {
+    const sb = await fetch(`${supabaseUrl}/rest/v1/richieste`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({
+        tipo: (() => {
+          const f = (formType + ' ' + requestType).toLowerCase();
+          if (f.includes('custode regionale')) return 'custode_regionale';
+          if (f.includes('custode locale')) return 'custode_locale';
+          if (f.includes('volont')) return 'volontario';
+          if (f.includes('casetta')) return 'richiesta_casetta';
+          if (f.includes('community gratuita')) return 'adesione_gratuita';
+          if (f.includes('sostenitore')) return 'sostenitore';
+          if (f.includes('partner')) return 'partner';
+          if (f.includes('sponsor')) return 'sponsor';
+          return 'informazioni';
+        })(),
+        nome: name || contactPerson || company,
+        email,
+        telefono: phone || null,
+        oggetto: requestType || formType,
+        messaggio: message,
+        regione: territory || null,
+        stato: 'nuova',
+      }),
+    });
+
+    if (!sb.ok) {
+      const detail = await sb.text();
+      console.error('Errore salvataggio Supabase:', sb.status, detail);
+      return res.status(502).json({
+        ok: false,
+        message: 'La richiesta non e stata registrata correttamente. Riprova tra poco.',
       });
-      if (!sb.ok) console.error('Errore salvataggio Supabase:', sb.status, await sb.text());
-    } catch (error) { console.error('Supabase non disponibile:', error); }
+    }
+  } catch (error) {
+    console.error('Supabase non disponibile:', error);
+    return res.status(500).json({
+      ok: false,
+      message: 'Errore temporaneo durante la registrazione della richiesta.',
+    });
   }
 
   /*
