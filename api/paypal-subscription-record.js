@@ -49,6 +49,8 @@ module.exports=async function(req,res){
 
     const payload={
       email:sub.subscriber?.email_address||null,
+      nome:sub.subscriber?.name?.given_name||null,
+      cognome:sub.subscriber?.name?.surname||null,
       tipologia:verified.tipologia,
       piano:verified.piano,
       importo:verified.importo,
