@@ -5,51 +5,82 @@
   <div id="paypal-sostenitore-mensile"></div>
   <p id="paypal-sostenitore-status" class="form-status" aria-live="polite"></p>
 </div>
+<div class="paypal-sandbox-all" style="margin-top:18px">
+  <label for="paypal-plan-select"><strong>Test altri piani PayPal (Sandbox)</strong></label>
+  <select id="paypal-plan-select" style="width:100%;margin:8px 0 12px;padding:10px;border-radius:10px">
+    <option value="">Seleziona un piano</option>
+    <option value="sostenitore-annuale">Sostenitore — €39,90/anno</option>
+    <option value="partner-mensile">Partner — €19,90/mese</option>
+    <option value="partner-annuale">Partner — €189/anno</option>
+    <option value="sponsor-mensile">Sponsor — €49,90/mese</option>
+    <option value="sponsor-annuale">Sponsor — €489/anno</option>
+  </select>
+  <div id="paypal-selected-button"></div>
+  <p id="paypal-selected-status" class="form-status" aria-live="polite"></p>
+</div>
 </div><div class="annual-price">oppure €39,90 / anno</div><p>Per chi vuole sostenere il progetto e ottenere vantaggi dedicati.</p><ul><li>Sconti presso attività aderenti</li><li>Accesso a contenuti riservati</li><li>Aggiornamenti e iniziative</li></ul><a class="btn btn-primary" href="#aderisci-form" data-plan="Sostenitore privato">Scegli il piano</a></article><article class="membership-card"><div class="plan-badge">ATTIVITÀ & PROFESSIONISTI</div><div class="plan-icon">🤝</div><h3>Partner</h3><div class="plan-price">€19,90 <small>/mese</small></div><div class="annual-price">oppure €189 / anno</div><p>Per attività commerciali e liberi professionisti che vogliono entrare nella rete.</p><ul><li>Visibilità sui social</li><li>Presenza sul sito</li><li>Visibilità nella WebApp</li></ul><a class="btn btn-primary" href="#aderisci-form" data-plan="Partner - attività/professionista">Scegli il piano</a></article><article class="membership-card sponsor"><div class="plan-badge">SPONSOR</div><div class="plan-icon">⭐</div><h3>Sponsor</h3><div class="plan-price">€49,90 <small>/mese</small></div><div class="annual-price">oppure €489 / anno</div><p>Per aziende che vogliono sostenere concretamente la crescita del progetto.</p><ul><li>Visibilità su tutti i canali</li><li>Post dedicati</li><li>Presenza del brand negli eventi</li></ul><a class="btn btn-primary" href="#aderisci-form" data-plan="Sponsor">Scegli il piano</a></article></div><div class="join-form-wrap" id="aderisci-form"><div><span class="eyebrow dark">Partecipa</span><h2>Iscriviti o chiedi informazioni</h2><p>Compila il modulo: ti ricontatteremo con tutte le informazioni necessarie per completare la tua adesione.</p></div><form class="card form" data-contact-form><input name="form_type" type="hidden" value="Adesione / richiesta informazioni"/><input aria-hidden="true" autocomplete="off" name="website" style="display:none" tabindex="-1" type="text"/><input name="nome" placeholder="Nome e cognome / Ragione sociale" required/><div class="form-two"><input name="email" placeholder="Email" required type="email"/><input name="telefono" placeholder="Telefono"/></div><select name="richiesta" id="membershipPlan" required><option value="">Scegli il tipo di adesione</option><option>Community gratuita</option><option>Sostenitore privato</option><option>Partner - attività/professionista</option><option>Sponsor</option><option>Richiesta casetta</option><option>Donazione libri o giochi</option><option>Altre informazioni</option></select><textarea name="messaggio" placeholder="Scrivi qui eventuali informazioni o richieste" required></textarea><label class="privacy-check"><input name="consenso_privacy" required type="checkbox" value="Accettato"/> Ho letto l’<a href="informativa.html" target="_blank" rel="noopener">informativa sul trattamento dei dati</a>.</label><button class="btn btn-primary" data-original-text="Invia richiesta" type="submit">Invia richiesta</button><div aria-live="polite" class="form-status" role="status"></div></form></div></div></main><a class="float-wa" href="https://chat.whatsapp.com/DqHTPq6dmyTIFbzc31WQCx?s=cl&amp;p=i&amp;mlu=0&amp;ilr=0&amp;amv=1" rel="noopener" target="_blank"><img alt="WhatsApp" class="wa-icon" src="assets/img/whatsapp-logo.jpg"/> Unisciti alla community</a><footer class="footer"><div class="container footer-grid"><div><h3>Progetto Libri Liberi</h3><p>Libri, giochi e condivisione: casette in legno per adulti, bambini e comunità. Nato a Pisa, con l'obiettivo di crescere in tutta Italia.</p></div><div><h4>Pagine</h4><a href="progetto.html">Il progetto</a><a href="mappa.html">Trova una casetta</a><a href="galleria.html">Galleria</a><a href="news.html">News</a></div><div><h4>Partecipa</h4><a href="aderisci.html">Aderisci</a><a href="partner.html">Diventa partner</a><a href="contatti.html">Contatti e WebApp</a></div><div><h4>Contatti e privacy</h4><a href="mailto:info@progettolibriliberi.it">info@progettolibriliberi.it</a><a href="https://chat.whatsapp.com/DqHTPq6dmyTIFbzc31WQCx?s=cl&amp;p=i&amp;mlu=0&amp;ilr=0&amp;amv=1" rel="noopener" target="_blank">Unisciti alla community</a><a href="privacy.html">Privacy Policy</a><a href="cookie-policy.html">Cookie Policy</a><a href="informativa.html">Informativa trattamento dati</a></div></div><div class="container credits">© 2026 Progetto Libri Liberi - Iniziativa libera. Sito realizzato da <a href="https://www.rpdigital.it" target="_blank" rel="noopener">RP Digital</a>.</div></footer><script src="assets/script.js"></script>
+
+
+
 <script src="https://www.paypal.com/sdk/js?client-id=AY4fTaYxxH4HT9YSWmB1cJ-DtN_pQnOLwMnzVB9oDtrZ3xdVi58uSTkX1uqrVhQ9y-Q2-XTNDA3WwuJX&vault=true&intent=subscription&currency=EUR"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-  const container = document.getElementById('paypal-sostenitore-mensile');
-  if (!container || !window.paypal) return;
+document.addEventListener('DOMContentLoaded', async function () {
+  const fixed = {
+    'sostenitore-mensile': {planId:'P-93G84049M39763023NKMWXIQ', tipologia:'sostenitore', piano:'mensile', importo:3.99}
+  };
+  const status1=document.getElementById('paypal-sostenitore-status');
+  if (document.getElementById('paypal-sostenitore-mensile') && window.paypal) {
+    paypal.Buttons({
+      style:{shape:'rect',label:'subscribe',height:44},
+      createSubscription:(data,actions)=>actions.subscription.create({plan_id:fixed['sostenitore-mensile'].planId}),
+      onApprove:async data=>record(data.subscriptionID,fixed['sostenitore-mensile'],status1),
+      onCancel:()=>{if(status1)status1.textContent='Operazione annullata.'},
+      onError:()=>{if(status1)status1.textContent='Errore durante il test PayPal Sandbox.'}
+    }).render('#paypal-sostenitore-mensile');
+  }
 
-  paypal.Buttons({
-    style: { shape: 'rect', label: 'subscribe', height: 44 },
-    createSubscription: function(data, actions) {
-      return actions.subscription.create({
-        plan_id: 'P-93G84049M39763023NKMWXIQ'
-      });
-    },
-    onApprove: async function(data) {
-      const status = document.getElementById('paypal-sostenitore-status');
-      if (status) status.textContent = 'Abbonamento Sandbox autorizzato. Registrazione in corso…';
-      try {
-        const r = await fetch('/api/paypal-subscription-record', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            subscription_id: data.subscriptionID,
-            tipologia: 'sostenitore',
-            piano: 'mensile',
-            importo: 3.99
-          })
-        });
-        const out = await r.json();
-        if (!r.ok || !out.ok) throw new Error(out.message || 'Registrazione non riuscita');
-        if (status) status.textContent = 'Test completato: abbonamento Sandbox registrato correttamente.';
-      } catch (e) {
-        if (status) status.textContent = 'PayPal ha autorizzato il test, ma la registrazione nel back office non è riuscita.';
-      }
-    },
-    onCancel: function() {
-      const status = document.getElementById('paypal-sostenitore-status');
-      if (status) status.textContent = 'Operazione annullata.';
-    },
-    onError: function() {
-      const status = document.getElementById('paypal-sostenitore-status');
-      if (status) status.textContent = 'Errore durante il test PayPal Sandbox.';
-    }
-  }).render('#paypal-sostenitore-mensile');
+  let plans={};
+  try {
+    const r=await fetch('/api/paypal-plans');
+    const d=await r.json();
+    if(!r.ok||!d.ok) throw new Error(d.message||'Piani non disponibili');
+    plans=d.plans;
+  } catch(e) {
+    const s=document.getElementById('paypal-selected-status');
+    if(s)s.textContent='Configurazione altri piani non disponibile: '+e.message;
+  }
+
+  const defs={
+    'sostenitore-annuale':{tipologia:'sostenitore',piano:'annuale',importo:39.90},
+    'partner-mensile':{tipologia:'partner',piano:'mensile',importo:19.90},
+    'partner-annuale':{tipologia:'partner',piano:'annuale',importo:189},
+    'sponsor-mensile':{tipologia:'sponsor',piano:'mensile',importo:49.90},
+    'sponsor-annuale':{tipologia:'sponsor',piano:'annuale',importo:489}
+  };
+  const select=document.getElementById('paypal-plan-select');
+  if(select) select.addEventListener('change',()=>{
+    const box=document.getElementById('paypal-selected-button'),st=document.getElementById('paypal-selected-status');
+    box.innerHTML=''; st.textContent='';
+    const slug=select.value;if(!slug)return;
+    const c=defs[slug],planId=plans[slug];
+    if(!planId){st.textContent='Piano Sandbox non disponibile.';return;}
+    paypal.Buttons({
+      style:{shape:'rect',label:'subscribe',height:44},
+      createSubscription:(data,actions)=>actions.subscription.create({plan_id:planId}),
+      onApprove:async data=>record(data.subscriptionID,{...c,planId},st),
+      onCancel:()=>st.textContent='Operazione annullata.',
+      onError:()=>st.textContent='Errore durante il test PayPal Sandbox.'
+    }).render('#paypal-selected-button');
+  });
+
+  async function record(subscriptionID,c,status){
+    if(status)status.textContent='Abbonamento Sandbox autorizzato. Registrazione in corso…';
+    try{
+      const r=await fetch('/api/paypal-subscription-record',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subscription_id:subscriptionID,tipologia:c.tipologia,piano:c.piano,importo:c.importo,plan_id:c.planId})});
+      const d=await r.json();if(!r.ok||!d.ok)throw new Error(d.message||'Registrazione non riuscita');
+      if(status)status.textContent='Test completato: abbonamento Sandbox registrato correttamente.';
+    }catch(e){if(status)status.textContent='PayPal autorizzato, ma registrazione back office non riuscita: '+e.message}
+  }
 });
 </script>
-
 </body></html>
