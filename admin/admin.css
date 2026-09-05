@@ -9,3 +9,5 @@
 .admin-modal-body{white-space:pre-wrap;line-height:1.65;margin-top:14px;padding:16px;border-radius:14px;background:#f8f3ed}
 .admin-row select{cursor:pointer}.admin-row button{font-weight:700}
 @media(max-width:760px){.admin-overview{grid-template-columns:1fr 1fr}}
+
+.course-plans{border:1px solid #d9c9b7;border-radius:12px;padding:14px;display:flex;gap:16px;flex-wrap:wrap}.course-plans legend{font-weight:800;padding:0 6px}.course-plans label{display:flex;align-items:center;gap:6px}.course-plans input{width:auto;margin:0}.course-actions{display:flex;gap:10px;flex-wrap:wrap}
