@@ -84,6 +84,13 @@ async function paymentExists(sid,key){
 }
 
 
+async function syncProfile(sid,key,state){
+  const profileState=state==='attivo'?'attivo':state;
+  await supabase(
+    `profili?paypal_subscription_id=eq.${encodeURIComponent(sid)}`,
+    'PATCH',key,{stato:profileState,updated_at:new Date().toISOString()}
+  );
+}
 
 module.exports=async function(req,res){
   if(req.method!=='POST') return res.status(405).json({ok:false,message:'Metodo non consentito'});
@@ -126,6 +133,7 @@ module.exports=async function(req,res){
         `pagamenti?provider_subscription_id=eq.${encodeURIComponent(sid)}`,
         'PATCH',key,{stato:state,updated_at:new Date().toISOString()}
       );
+      await syncProfile(sid,key,state);
     }else if(type==='BILLING.SUBSCRIPTION.UPDATED'){
       const ps=String(event.resource?.status||'').toUpperCase();
       const mapped={
@@ -137,6 +145,7 @@ module.exports=async function(req,res){
           `pagamenti?provider_subscription_id=eq.${encodeURIComponent(sid)}`,
           'PATCH',key,{stato:mapped,updated_at:new Date().toISOString()}
         );
+        await syncProfile(sid,key,mapped);
       }
     }else if(type==='PAYMENT.SALE.COMPLETED'){
       const r=event.resource||{};
@@ -148,6 +157,7 @@ module.exports=async function(req,res){
           updated_at:new Date().toISOString()
         }
       );
+      await syncProfile(sid,key,'attivo');
     }
 
     return res.status(200).json({ok:true,event:type,subscription_id:sid});

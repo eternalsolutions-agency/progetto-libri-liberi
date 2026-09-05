@@ -1,82 +1,20 @@
 const SUPABASE_URL='https://axudbwobzmmrqpdnbamp.supabase.co';
-
-const VALID_PLANS={
-  [process.env.PAYPAL_PLAN_SOSTENITORE_MENSILE||'P-93G84049M39763023NKMWXIQ']:{tipologia:'sostenitore',piano:'mensile',importo:3.99},
-  [process.env.PAYPAL_PLAN_SOSTENITORE_ANNUALE||'P-35292608CJ9955259NKMXPBQ']:{tipologia:'sostenitore',piano:'annuale',importo:39.90},
-  [process.env.PAYPAL_PLAN_PARTNER_MENSILE||'P-45885765J93513534NKMXPBY']:{tipologia:'partner',piano:'mensile',importo:19.90},
-  [process.env.PAYPAL_PLAN_PARTNER_ANNUALE||'P-7S305652AE760404ENKMXPCA']:{tipologia:'partner',piano:'annuale',importo:189},
-  [process.env.PAYPAL_PLAN_SPONSOR_MENSILE||'P-83G22360TS406391YNKMXPCA']:{tipologia:'sponsor',piano:'mensile',importo:49.90},
-  [process.env.PAYPAL_PLAN_SPONSOR_ANNUALE||'P-1CR59062UF415371RNKMXPCI']:{tipologia:'sponsor',piano:'annuale',importo:489}
-};
-
-function paypalBase(){
-  return (process.env.PAYPAL_ENV||'sandbox')==='live'
-    ? 'https://api-m.paypal.com'
-    : 'https://api-m.sandbox.paypal.com';
-}
-async function accessToken(){
-  const id=process.env.PAYPAL_CLIENT_ID,secret=process.env.PAYPAL_CLIENT_SECRET;
-  if(!id||!secret) throw new Error('Credenziali PayPal mancanti');
-  const r=await fetch(`${paypalBase()}/v1/oauth2/token`,{
-    method:'POST',
-    headers:{Authorization:`Basic ${Buffer.from(`${id}:${secret}`).toString('base64')}`,'Content-Type':'application/x-www-form-urlencoded'},
-    body:'grant_type=client_credentials'
-  });
-  const d=await r.json();
-  if(!r.ok) throw new Error(d.error_description||'PayPal auth error');
-  return d.access_token;
-}
-module.exports=async function(req,res){
-  if(req.method!=='POST') return res.status(405).json({ok:false,message:'Metodo non consentito'});
-  try{
-    const serviceKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
-    if(!serviceKey) throw new Error('SUPABASE_SERVICE_ROLE_KEY mancante su Vercel');
-
-    const {subscription_id}=req.body||{};
-    if(!subscription_id) return res.status(400).json({ok:false,message:'Subscription ID mancante'});
-
-    const token=await accessToken();
-    const pr=await fetch(`${paypalBase()}/v1/billing/subscriptions/${encodeURIComponent(subscription_id)}`,{
-      headers:{Authorization:`Bearer ${token}`}
-    });
-    const sub=await pr.json();
-    if(!pr.ok) throw new Error(sub.message||'Impossibile verificare la sottoscrizione');
-
-    const verified=VALID_PLANS[sub.plan_id];
-    if(!verified) return res.status(400).json({ok:false,message:'Piano PayPal non riconosciuto'});
-    if(!['ACTIVE','APPROVAL_PENDING','APPROVED'].includes(sub.status))
-      return res.status(400).json({ok:false,message:`Stato sottoscrizione non valido: ${sub.status}`});
-
-    const payload={
-      email:sub.subscriber?.email_address||null,
-      nome:sub.subscriber?.name?.given_name||null,
-      cognome:sub.subscriber?.name?.surname||null,
-      tipologia:verified.tipologia,
-      piano:verified.piano,
-      importo:verified.importo,
-      provider:'paypal',
-      provider_subscription_id:subscription_id,
-      stato:sub.status==='ACTIVE'?'attivo':'in_attesa',
-      data_inizio:sub.start_time||new Date().toISOString()
-    };
-
-    const rr=await fetch(`${SUPABASE_URL}/rest/v1/pagamenti`,{
-      method:'POST',
-      headers:{
-        apikey:serviceKey,
-        Authorization:`Bearer ${serviceKey}`,
-        'Content-Type':'application/json',
-        Prefer:'return=minimal'
-      },
-      body:JSON.stringify(payload)
-    });
-    if(!rr.ok){
-      const detail=await rr.text();
-      throw new Error(`Supabase ${rr.status}: ${detail}`);
-    }
-    return res.status(200).json({ok:true,subscription_id,status:sub.status,plan:verified});
-  }catch(e){
-    console.error(e);
-    return res.status(500).json({ok:false,message:e.message||'Errore'});
-  }
-};
+const LIVE_PLANS={
+'P-9A561918VF768084BNKMZQDA':{tipologia:'sostenitore',piano:'mensile',importo:3.99},
+'P-2EN81542U3034004CNKMZQDA':{tipologia:'sostenitore',piano:'annuale',importo:39.90},
+'P-49H94937NM375584RNKMZQDA':{tipologia:'partner',piano:'mensile',importo:19.90},
+'P-15K98418UR180681TNKMZQDA':{tipologia:'partner',piano:'annuale',importo:189},
+'P-6RX74384NX2907108NKMZQDI':{tipologia:'sponsor',piano:'mensile',importo:49.90},
+'P-5CW677631B732840SNKMZQDI':{tipologia:'sponsor',piano:'annuale',importo:489}};
+const SANDBOX_PLANS={
+'P-93G84049M39763023NKMWXIQ':{tipologia:'sostenitore',piano:'mensile',importo:3.99},
+'P-35292608CJ9955259NKMXPBQ':{tipologia:'sostenitore',piano:'annuale',importo:39.90},
+'P-45885765J93513534NKMXPBY':{tipologia:'partner',piano:'mensile',importo:19.90},
+'P-7S305652AE760404ENKMXPCA':{tipologia:'partner',piano:'annuale',importo:189},
+'P-83G22360TS406391YNKMXPCA':{tipologia:'sponsor',piano:'mensile',importo:49.90},
+'P-1CR59062UF415371RNKMXPCI':{tipologia:'sponsor',piano:'annuale',importo:489}};
+const live=()=> (process.env.PAYPAL_ENV||'sandbox')==='live';
+const base=()=>live()?'https://api-m.paypal.com':'https://api-m.sandbox.paypal.com';
+async function token(){const id=live()?process.env.PAYPAL_LIVE_CLIENT_ID:process.env.PAYPAL_CLIENT_ID,secret=live()?process.env.PAYPAL_LIVE_CLIENT_SECRET:process.env.PAYPAL_CLIENT_SECRET;if(!id||!secret)throw Error('Credenziali PayPal mancanti');const r=await fetch(base()+'/v1/oauth2/token',{method:'POST',headers:{Authorization:'Basic '+Buffer.from(id+':'+secret).toString('base64'),'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=client_credentials'}),d=await r.json();if(!r.ok)throw Error(d.error_description||'PayPal auth error');return d.access_token}
+async function sb(path,method,key,body){const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,{method,headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json',Prefer:'return=minimal'},body:body===undefined?undefined:JSON.stringify(body)});if(!r.ok)throw Error('Supabase '+r.status+': '+await r.text())}
+module.exports=async(req,res)=>{if(req.method!=='POST')return res.status(405).json({ok:false,message:'Metodo non consentito'});try{const service=process.env.SUPABASE_SERVICE_ROLE_KEY;if(!service)throw Error('SUPABASE_SERVICE_ROLE_KEY mancante');const bearer=String(req.headers.authorization||'').replace(/^Bearer\s+/i,'');if(!bearer)return res.status(401).json({ok:false,message:'Accesso richiesto'});const ur=await fetch(SUPABASE_URL+'/auth/v1/user',{headers:{apikey:service,Authorization:'Bearer '+bearer}}),user=await ur.json();if(!ur.ok||!user.id)return res.status(401).json({ok:false,message:'Sessione non valida'});const sid=req.body?.subscription_id;if(!sid)return res.status(400).json({ok:false,message:'Subscription ID mancante'});const t=await token(),pr=await fetch(base()+'/v1/billing/subscriptions/'+encodeURIComponent(sid),{headers:{Authorization:'Bearer '+t}}),sub=await pr.json();if(!pr.ok)throw Error(sub.message||'Impossibile verificare la sottoscrizione');const plan=(live()?LIVE_PLANS:SANDBOX_PLANS)[sub.plan_id];if(!plan)return res.status(400).json({ok:false,message:'Piano PayPal non riconosciuto'});if(sub.custom_id!==user.id)return res.status(403).json({ok:false,message:'Abbonamento non associato a questo account'});if(!['ACTIVE','APPROVAL_PENDING','APPROVED'].includes(sub.status))return res.status(400).json({ok:false,message:'Stato PayPal non valido: '+sub.status});const state=sub.status==='ACTIVE'?'attivo':'in_attesa';await sb('pagamenti','POST',service,{email:user.email,nome:user.user_metadata?.nome||sub.subscriber?.name?.given_name||null,cognome:user.user_metadata?.cognome||sub.subscriber?.name?.surname||null,tipologia:plan.tipologia,piano:plan.piano,importo:plan.importo,provider:'paypal',provider_subscription_id:sid,stato:state,data_inizio:sub.start_time||new Date().toISOString()});await sb('profili?id=eq.'+encodeURIComponent(user.id),'PATCH',service,{piano:plan.tipologia,stato:state,paypal_subscription_id:sid,updated_at:new Date().toISOString()});return res.status(200).json({ok:true,status:sub.status,plan})}catch(e){console.error(e);return res.status(500).json({ok:false,message:e.message||'Errore'})}};
