@@ -47,14 +47,33 @@ logoutBtn.addEventListener('click',async()=>{
     }
 
     const {data:corsi,error:courseError}=await db.from('corsi')
-      .select('id,titolo,descrizione,categoria,immagine_url,link_corso,destinatari')
+      .select('id,titolo,descrizione,categoria,immagine_url,destinatari,tipo_accesso,prezzo,prezzo_scontato')
       .eq('pubblicato',true)
       .order('created_at',{ascending:false});
     if(courseError) throw courseError;
 
+    const {data:contenuti,error:contentError}=await db.from('corso_contenuti').select('corso_id,link_corso');
+    if(contentError) throw contentError;
+    const links=new Map((contenuti||[]).map(x=>[String(x.corso_id),x.link_corso]));
+
     courseListEl.innerHTML=corsi?.length
-      ? corsi.map(c=>`<article class="card course-card">${c.immagine_url?`<img src="${c.immagine_url}" alt="">`:''}<div class="course-card-body"><small>${c.categoria||'Corso'}</small><h3>${c.titolo}</h3><p>${c.descrizione||''}</p><a class="btn btn-primary" href="${c.link_corso}" target="_blank" rel="noopener noreferrer">Apri corso</a></div></article>`).join('')
-      : '<p>Al momento non ci sono corsi disponibili per il tuo piano.</p>';
+      ? corsi.map(c=>{
+          const link=links.get(String(c.id));
+          const incluso=c.tipo_accesso!=='premium' && (plan==='sponsor'||(c.destinatari||[]).includes(plan));
+          const sbloccato=!!link; // RLS restituisce il link solo se autorizzato/acquistato
+          let action='';
+          if(sbloccato||incluso){
+            action=link?`<a class="btn btn-primary" href="${link}" target="_blank" rel="noopener noreferrer">Apri corso</a>`:'<span class="auth-note">Corso incluso, contenuto non disponibile.</span>';
+          }else if(c.tipo_accesso==='premium'){
+            const prezzo=Number(c.prezzo||0).toFixed(2).replace('.',',');
+            const sconto=c.prezzo_scontato!=null?Number(c.prezzo_scontato).toFixed(2).replace('.',','):null;
+            action=`<div style="margin-top:10px"><strong>${sconto?`<span style="text-decoration:line-through;opacity:.55">€ ${prezzo}</span> &nbsp; € ${sconto}`:`€ ${prezzo}`}</strong></div><button class="btn btn-primary" type="button" disabled title="Pagamento PayPal in attivazione">Acquista corso</button>`;
+          }else{
+            action='<span class="auth-note">Non incluso nel tuo piano.</span>';
+          }
+          return `<article class="card course-card">${c.immagine_url?`<img src="${c.immagine_url}" alt="">`:''}<div class="course-card-body"><small>${c.categoria||'Corso'}${c.tipo_accesso==='premium'?' · Premium':''}</small><h3>${c.titolo}</h3><p>${c.descrizione||''}</p>${action}</div></article>`;
+        }).join('')
+      : '<p>Al momento non ci sono corsi disponibili.</p>';
 
     if(['partner','sponsor'].includes(plan)){
       document.getElementById('partnerEvents').hidden=false;
