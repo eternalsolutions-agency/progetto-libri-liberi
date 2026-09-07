@@ -81,7 +81,10 @@ logoutBtn.addEventListener('click',async()=>{
           const sbloccato=!!link; // RLS restituisce il link solo se autorizzato/acquistato
           let action='';
           if(sbloccato||incluso){
-            action=link?`<a class="btn btn-primary" href="${link}" target="_blank" rel="noopener noreferrer">Apri corso</a>`:'<span class="auth-note">Corso incluso, contenuto non disponibile.</span>';
+            const isSocialCourse=(c.titolo||'').toLowerCase().includes('social media marketing');
+            action=isSocialCourse
+              ? `<a class="btn btn-primary" href="corso-social-media-marketing.html">Apri corso</a>`
+              : (link?`<a class="btn btn-primary" href="${link}" target="_blank" rel="noopener noreferrer">Apri corso</a>`:'<span class="auth-note">Corso incluso, contenuto non disponibile.</span>');
           }else if(c.tipo_accesso==='premium'){
             const prezzo=Number(c.prezzo||0).toFixed(2).replace('.',',');
             const sconto=c.prezzo_scontato!=null?Number(c.prezzo_scontato).toFixed(2).replace('.',','):null;
