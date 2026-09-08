@@ -16,11 +16,43 @@ const lessons=[
 {n:11,id:'OcZdc6eCOYM',pdf:'lezione-11.pdf',t:'Gli errori da evitare sui Social',d:'Riconosciamo gli errori più frequenti che rallentano una strategia e impariamo come correggerli.'},
 {n:12,id:'5SDxDxHv2o0',pdf:'lezione-12.pdf',t:'Costruiamo la tua strategia Social',d:'Lezione conclusiva: trasformiamo tutto il percorso in una strategia operativa di 30 giorni.'}
 ];
-let current=0;const KEY='club_smm_completed_v1';let completed=new Set(JSON.parse(localStorage.getItem(KEY)||'[]'));
-const $=id=>document.getElementById(id);function save(){localStorage.setItem(KEY,JSON.stringify([...completed]));updateProgress();renderList()}
+let current=0;const KEY='club_smm_completed_v1';let completed=new Set();let currentUser=null;let courseId=null;
+const $=id=>document.getElementById(id);
+async function loadCourseId(){
+  const {data,error}=await db.from('corsi').select('id,titolo').ilike('titolo','%Social Media Marketing%').eq('pubblicato',true).limit(1).maybeSingle();
+  if(error||!data) throw new Error('Corso Social Media Marketing non trovato nel catalogo.');
+  courseId=data.id;
+}
+async function loadProgress(){
+  const {data,error}=await db.from('progressi_corsi').select('lezione_numero,completata').eq('user_id',currentUser.id).eq('corso_id',courseId);
+  if(error) throw error;
+  completed=new Set((data||[]).filter(r=>r.completata).map(r=>r.lezione_numero));
+  const old=JSON.parse(localStorage.getItem(KEY)||'[]').filter(n=>Number.isInteger(n)&&n>=1&&n<=12);
+  if(old.length){
+    for(const n of old){
+      if(!completed.has(n)){
+        const {error:e}=await db.from('progressi_corsi').upsert({user_id:currentUser.id,corso_id:courseId,lezione_numero:n,completata:true,completata_il:new Date().toISOString(),updated_at:new Date().toISOString()},{onConflict:'user_id,corso_id,lezione_numero'});
+        if(!e) completed.add(n);
+      }
+    }
+    localStorage.removeItem(KEY);
+  }
+}
+async function saveLesson(n,isDone){
+  const row={user_id:currentUser.id,corso_id:courseId,lezione_numero:n,completata:isDone,updated_at:new Date().toISOString()};
+  if(isDone) row.completata_il=new Date().toISOString();
+  const {error}=await db.from('progressi_corsi').upsert(row,{onConflict:'user_id,corso_id,lezione_numero'});
+  if(error) throw error;
+  if(isDone) completed.add(n); else completed.delete(n);
+  if(completed.size===12){
+    const {error:ce}=await db.from('completamenti_corsi').upsert({user_id:currentUser.id,corso_id:courseId},{onConflict:'user_id,corso_id',ignoreDuplicates:true});
+    if(ce) throw ce;
+  }
+  updateProgress();renderList();
+}
 function updateProgress(){const done=completed.size;$('progressText').textContent=`${done}/12 lezioni · ${Math.round(done/12*100)}%`;$('progressBar').style.width=(done/12*100)+'%'}
 function renderList(){ $('lessonList').innerHTML=lessons.map((l,i)=>`<button class="lesson-item ${i===current?'active':''} ${completed.has(l.n)?'done':''} ${!l.id?'locked':''}" data-i="${i}" ${!l.id?'disabled':''}><span class="num">${completed.has(l.n)?'✓':l.n}</span><span><strong>${l.t}</strong><small>${l.id?'Video disponibile':'In arrivo'}</small></span></button>`).join('');document.querySelectorAll('.lesson-item:not(.locked)').forEach(b=>b.onclick=()=>openLesson(Number(b.dataset.i)))}
 function openLesson(i){const l=lessons[i];if(!l?.id)return;current=i;$('player').src=`https://www.youtube-nocookie.com/embed/${l.id}?rel=0`;$('lessonKicker').textContent=`Lezione ${l.n} di 12`;$('lessonTitle').textContent=l.t;$('lessonDesc').textContent=l.d;$('pdfBtn').href=l.pdf;$('pdfBtn').setAttribute('download',`Social-Media-Marketing-Lezione-${String(l.n).padStart(2,'0')}.pdf`);$('pdfText').textContent=`Materiale della Lezione ${l.n}: ${l.t}.`;$('completeBtn').textContent=completed.has(l.n)?'✓ Lezione completata':'Segna come completata';$('completeBtn').classList.toggle('done',completed.has(l.n));$('prevBtn').disabled=i===0;$('nextBtn').disabled=i>=lessons.length-1||!lessons[i+1]?.id;renderList();window.scrollTo({top:0,behavior:'smooth'})}
-$('completeBtn').onclick=()=>{const n=lessons[current].n;completed.has(n)?completed.delete(n):completed.add(n);save();openLesson(current)};$('prevBtn').onclick=()=>openLesson(current-1);$('nextBtn').onclick=()=>openLesson(current+1);
-(async()=>{const {data:{session}}=await db.auth.getSession();if(!session){location.href='accedi.html';return}const {data:p}=await db.from('profili').select('piano,stato').eq('id',session.user.id).maybeSingle();if(!p||!['attivo','in_attesa'].includes(p.stato)){$('authState').textContent='Il tuo accesso al Club non risulta attivo.';return}$('authState').hidden=true;$('courseApp').hidden=false;updateProgress();openLesson(0)})();
+$('completeBtn').onclick=async()=>{const n=lessons[current].n;const wasDone=completed.has(n);const btn=$('completeBtn');btn.disabled=true;try{await saveLesson(n,!wasDone);openLesson(current)}catch(e){console.error(e);alert('Non riesco a salvare il progresso. Riprova tra poco.')}finally{btn.disabled=false}};$('prevBtn').onclick=()=>openLesson(current-1);$('nextBtn').onclick=()=>openLesson(current+1);
+(async()=>{try{const {data:{session}}=await db.auth.getSession();if(!session){location.href='accedi.html';return}currentUser=session.user;const {data:p}=await db.from('profili').select('piano,stato').eq('id',session.user.id).maybeSingle();if(!p||!['attivo','in_attesa'].includes(p.stato)){$('authState').textContent='Il tuo accesso al Club non risulta attivo.';return}await loadCourseId();await loadProgress();$('authState').hidden=true;$('courseApp').hidden=false;updateProgress();openLesson(0)}catch(e){console.error(e);$('authState').textContent='Non riesco a caricare i progressi del corso. Riprova tra poco.'}})();
 </script><script src="assets/script.js"></script></body></html>
