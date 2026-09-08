@@ -52,7 +52,7 @@ toggleCoursePrices();
 
 function resetEventForm(){
   const f=$('#eventForm');if(!f)return;
-  f.reset();$('#eventId').value='';$('#eventPublished').checked=true;$('#eventImageFile').value='';$('#eventImagePreview').style.display='none';$('#eventImagePreview').src='';
+  f.reset();$('#eventId').value='';$('#eventPublished').checked=true;$('#eventShowNews').checked=false;$('#eventImageFile').value='';$('#eventImagePreview').style.display='none';$('#eventImagePreview').src='';
   $('#eventCancel').hidden=true;$('#eventStatus').textContent='';
 }
 async function loadEvents(){
@@ -69,7 +69,7 @@ function editEvent(id,rows){
   const ev=rows.find(x=>String(x.id)===String(id));if(!ev)return;
   $('#eventId').value=ev.id;$('#eventTitle').value=ev.titolo||'';
   $('#eventPlace').value=ev.luogo||'';$('#eventImage').value=ev.immagine_url||'';$('#eventImageFile').value='';$('#eventImagePreview').src=ev.immagine_url||'';$('#eventImagePreview').style.display=ev.immagine_url?'block':'none';
-  $('#eventDescription').value=ev.descrizione||'';$('#eventPublished').checked=!!ev.pubblicato;
+  $('#eventDescription').value=ev.descrizione||'';$('#eventPublished').checked=!!ev.pubblicato;$('#eventShowNews').checked=!!ev.mostra_news;
   if(ev.data_evento){
     const d=new Date(ev.data_evento);const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);
     $('#eventDate').value=local.toISOString().slice(0,16);
@@ -115,7 +115,8 @@ $('#eventForm')?.addEventListener('submit',async e=>{
     luogo:$('#eventPlace').value.trim()||null,
     immagine_url:imageUrl,
     descrizione:$('#eventDescription').value.trim()||null,
-    pubblicato:$('#eventPublished').checked
+    pubblicato:$('#eventPublished').checked,
+    mostra_news:$('#eventShowNews').checked
   };
   const id=$('#eventId').value;
   const result=id
