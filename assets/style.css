@@ -456,3 +456,9 @@ body:before{
 @media(max-width:800px){.google-map-card iframe{height:400px}.membership-grid,.join-form-wrap,.volunteer-call,.app-contact-grid,.contact-bottom,.install-steps{grid-template-columns:1fr}.form-two{grid-template-columns:1fr}.webapp-card{padding:25px}.install-card{padding:0}}
 
 .qr-live{display:grid;justify-items:center;gap:8px;margin:22px 0;padding:18px;background:#fff;border:1px solid #e2d4c4;border-radius:18px;text-align:center}.qr-live img{width:min(220px,70vw);height:auto;border-radius:12px}.qr-live small{max-width:320px;color:#6f6258}
+
+
+/* LOGIN AREA RISERVATA */
+.login-mini{display:inline-flex!important;align-items:center;gap:6px;padding:8px 12px!important;border:1px solid rgba(111,76,48,.28);border-radius:999px;background:#fffaf4;color:#6f4c30!important;font-weight:800;font-size:.88rem;line-height:1;white-space:nowrap;transition:.2s ease}
+.login-mini:hover{background:#6f4c30;color:#fff!important;border-color:#6f4c30;transform:translateY(-1px)}
+@media(max-width:900px){.login-mini{justify-content:center;margin-top:4px;padding:10px 13px!important}}
