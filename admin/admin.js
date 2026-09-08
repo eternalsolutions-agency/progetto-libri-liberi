@@ -52,7 +52,7 @@ toggleCoursePrices();
 
 function resetEventForm(){
   const f=$('#eventForm');if(!f)return;
-  f.reset();$('#eventId').value='';$('#eventPublished').checked=true;
+  f.reset();$('#eventId').value='';$('#eventPublished').checked=true;$('#eventImageFile').value='';$('#eventImagePreview').style.display='none';$('#eventImagePreview').src='';
   $('#eventCancel').hidden=true;$('#eventStatus').textContent='';
 }
 async function loadEvents(){
@@ -68,7 +68,7 @@ async function loadEvents(){
 function editEvent(id,rows){
   const ev=rows.find(x=>String(x.id)===String(id));if(!ev)return;
   $('#eventId').value=ev.id;$('#eventTitle').value=ev.titolo||'';
-  $('#eventPlace').value=ev.luogo||'';$('#eventImage').value=ev.immagine_url||'';
+  $('#eventPlace').value=ev.luogo||'';$('#eventImage').value=ev.immagine_url||'';$('#eventImageFile').value='';$('#eventImagePreview').src=ev.immagine_url||'';$('#eventImagePreview').style.display=ev.immagine_url?'block':'none';
   $('#eventDescription').value=ev.descrizione||'';$('#eventPublished').checked=!!ev.pubblicato;
   if(ev.data_evento){
     const d=new Date(ev.data_evento);const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);
@@ -83,16 +83,37 @@ async function deleteEvent(id){
   if(error){alert('Errore: '+error.message);return}
   await loadEvents();
 }
+
+$('#eventImageFile')?.addEventListener('change',()=>{
+  const file=$('#eventImageFile').files?.[0];const preview=$('#eventImagePreview');
+  if(!file){preview.style.display='none';preview.src='';return}
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)){alert('Formato non supportato. Usa JPG, PNG o WEBP.');$('#eventImageFile').value='';return}
+  if(file.size>5*1024*1024){alert('Immagine troppo grande. Massimo 5 MB.');$('#eventImageFile').value='';return}
+  preview.src=URL.createObjectURL(file);preview.style.display='block';
+});
+async function uploadEventImage(){
+  const file=$('#eventImageFile')?.files?.[0];
+  if(!file)return $('#eventImage').value.trim()||null;
+  const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'');
+  const path=`eventi/${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+  const {error}=await db.storage.from('galleria').upload(path,file,{upsert:false,contentType:file.type});
+  if(error)throw error;
+  const {data}=db.storage.from('galleria').getPublicUrl(path);
+  return data.publicUrl;
+}
+
 $('#eventForm')?.addEventListener('submit',async e=>{
   e.preventDefault();
   const st=$('#eventStatus');st.className='form-status';st.textContent='Salvataggio…';
   const rawDate=$('#eventDate').value;
   if(!rawDate){st.textContent='Inserisci data e ora dell’evento.';st.className='form-status is-error';return}
+  let imageUrl;
+  try{imageUrl=await uploadEventImage()}catch(err){console.error('ERRORE UPLOAD LOCANDINA:',err);st.textContent='Errore caricamento locandina: '+(err?.message||'errore sconosciuto');st.className='form-status is-error';return}
   const payload={
     titolo:$('#eventTitle').value.trim(),
     data_evento:new Date(rawDate).toISOString(),
     luogo:$('#eventPlace').value.trim()||null,
-    immagine_url:$('#eventImage').value.trim()||null,
+    immagine_url:imageUrl,
     descrizione:$('#eventDescription').value.trim()||null,
     pubblicato:$('#eventPublished').checked
   };
