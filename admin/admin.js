@@ -49,6 +49,79 @@ $('#courseForm')?.addEventListener('submit',async e=>{e.preventDefault();const s
 $('#courseCancel')?.addEventListener('click',resetCourseForm);
 toggleCoursePrices();
 
+
+function resetEventForm(){
+  const f=$('#eventForm');if(!f)return;
+  f.reset();$('#eventId').value='';$('#eventPublished').checked=true;
+  $('#eventCancel').hidden=true;$('#eventStatus').textContent='';
+}
+async function loadEvents(){
+  const el=$('#eventsList');if(!el)return;
+  el.innerHTML='<p>Caricamento eventi…</p>';
+  const {data,error}=await db.from('eventi_partner').select('*').order('data_evento',{ascending:false});
+  if(error){console.error('ERRORE EVENTI:',error);el.innerHTML='<p>Errore Supabase: '+esc(error.message)+'</p>';return}
+  const rows=data||[];
+  el.innerHTML=rows.length?rows.map(ev=>`<article class="admin-row"><div><span class="admin-chip">${ev.pubblicato?'Pubblicato':'Bozza'}</span><h3>${esc(ev.titolo||'Evento')}</h3><p>${esc(ev.luogo||'')}</p><p>${esc(ev.descrizione||'')}</p><small>${ev.data_evento?new Date(ev.data_evento).toLocaleString('it-IT'):'Data non indicata'}</small></div><div><button class="admin-detail" data-event-edit="${ev.id}">Modifica</button><button class="admin-detail" data-event-delete="${ev.id}">Elimina</button></div></article>`).join(''):'<p>Nessun evento.</p>';
+  document.querySelectorAll('[data-event-edit]').forEach(b=>b.onclick=()=>editEvent(b.dataset.eventEdit,rows));
+  document.querySelectorAll('[data-event-delete]').forEach(b=>b.onclick=()=>deleteEvent(b.dataset.eventDelete));
+}
+function editEvent(id,rows){
+  const ev=rows.find(x=>String(x.id)===String(id));if(!ev)return;
+  $('#eventId').value=ev.id;$('#eventTitle').value=ev.titolo||'';
+  $('#eventPlace').value=ev.luogo||'';$('#eventImage').value=ev.immagine_url||'';
+  $('#eventDescription').value=ev.descrizione||'';$('#eventPublished').checked=!!ev.pubblicato;
+  if(ev.data_evento){
+    const d=new Date(ev.data_evento);const local=new Date(d.getTime()-d.getTimezoneOffset()*60000);
+    $('#eventDate').value=local.toISOString().slice(0,16);
+  }else $('#eventDate').value='';
+  $('#eventCancel').hidden=false;$('#eventStatus').textContent='';
+  $('#eventForm').scrollIntoView({behavior:'smooth'});
+}
+async function deleteEvent(id){
+  if(!confirm('Eliminare questo evento?'))return;
+  const {error}=await db.from('eventi_partner').delete().eq('id',id);
+  if(error){alert('Errore: '+error.message);return}
+  await loadEvents();
+}
+$('#eventForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const st=$('#eventStatus');st.className='form-status';st.textContent='Salvataggio…';
+  const rawDate=$('#eventDate').value;
+  if(!rawDate){st.textContent='Inserisci data e ora dell’evento.';st.className='form-status is-error';return}
+  const payload={
+    titolo:$('#eventTitle').value.trim(),
+    data_evento:new Date(rawDate).toISOString(),
+    luogo:$('#eventPlace').value.trim()||null,
+    immagine_url:$('#eventImage').value.trim()||null,
+    descrizione:$('#eventDescription').value.trim()||null,
+    pubblicato:$('#eventPublished').checked
+  };
+  const id=$('#eventId').value;
+  const result=id
+    ? await db.from('eventi_partner').update(payload).eq('id',id)
+    : await db.from('eventi_partner').insert(payload);
+  if(result.error){
+    console.error('ERRORE SALVATAGGIO EVENTO:',result.error);
+    st.textContent='Errore Supabase: '+result.error.message;st.className='form-status is-error';return;
+  }
+  resetEventForm();await loadEvents();
+  const ok=$('#eventStatus');ok.textContent='Evento salvato correttamente.';ok.className='form-status is-success';
+});
+$('#eventCancel')?.addEventListener('click',resetEventForm);
+
+async function loadEventRequests(){
+  const el=$('#eventRequestsList');if(!el)return;
+  el.innerHTML='<p>Caricamento richieste…</p>';
+  const {data,error}=await db.from('richieste_eventi_partner').select('*').order('created_at',{ascending:false});
+  if(error){console.error('ERRORE RICHIESTE EVENTI:',error);el.innerHTML='<p>Errore Supabase: '+esc(error.message)+'</p>';return}
+  const rows=data||[];
+  el.innerHTML=rows.length?rows.map(r=>`<article class="admin-row"><div><span class="admin-chip">${esc(r.stato||'nuova')}</span><h3>${esc([r.nome,r.cognome].filter(Boolean).join(' ')||r.email||'Richiesta')}</h3><p>${esc(r.email||'')}</p><small>${r.created_at?new Date(r.created_at).toLocaleString('it-IT'):''} · Evento ID: ${esc(r.evento_id||'')}</small></div><div><select data-event-request-status="${r.id}">${['nuova','contattato','confermato','rifiutato'].map(x=>`<option value="${x}" ${x===(r.stato||'nuova')?'selected':''}>${x.charAt(0).toUpperCase()+x.slice(1)}</option>`).join('')}</select></div></article>`).join(''):'<p>Nessuna richiesta di partecipazione.</p>';
+  document.querySelectorAll('[data-event-request-status]').forEach(s=>s.onchange=async()=>{
+    const {error}=await db.from('richieste_eventi_partner').update({stato:s.value}).eq('id',s.dataset.eventRequestStatus);
+    if(error)alert('Errore: '+error.message);
+  });
+}
+
 document.querySelectorAll('[data-refresh]').forEach(b=>b.onclick=()=>b.dataset.refresh==='richieste'?loadRequests():b.dataset.refresh==='volontari'?loadVolunteers():b.dataset.refresh==='galleria'?loadGallery():b.dataset.refresh==='utenti'?loadUsers():b.dataset.refresh==='corsi'?loadCourses():b.dataset.refresh==='eventi'?loadEvents():b.dataset.refresh==='richieste-eventi'?loadEventRequests():loadPayments());showSession();
 $('#paymentTypeFilter')?.addEventListener('change',loadPayments);
 $('#paymentStatusFilter')?.addEventListener('change',loadPayments);
