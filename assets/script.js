@@ -150,6 +150,14 @@ document.querySelectorAll('[data-plan]').forEach(link=>link.addEventListener('cl
     }
   },true);
 
+  // Icone social ufficiali tramite Font Awesome Brands
+  if(!document.querySelector('link[data-pll-social-icons]')){
+    const fa=document.createElement('link');fa.rel='stylesheet';fa.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css';fa.dataset.pllSocialIcons='1';document.head.appendChild(fa);
+  }
+  async function copyShareLink(url,button){
+    try{await navigator.clipboard.writeText(url);const old=button.innerHTML;button.classList.add('copied');button.innerHTML='<i class="fa-solid fa-check"></i><span>Copiato!</span>';setTimeout(()=>{button.classList.remove('copied');button.innerHTML=old},1800)}catch(e){prompt('Copia questo link:',url)}
+  }
+
   function shareUrl(platform,title,url){
     const u=encodeURIComponent(url),t=encodeURIComponent(title+' '+url);
     const map={facebook:`https://www.facebook.com/sharer/sharer.php?u=${u}`,linkedin:`https://www.linkedin.com/sharing/share-offsite/?url=${u}`,threads:`https://www.threads.net/intent/post?text=${t}`};
@@ -159,7 +167,7 @@ document.querySelectorAll('[data-plan]').forEach(link=>link.addEventListener('cl
   }
   window.pllShareMarkup=function(title,url){
     const safe=(s)=>String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    return `<div class="share-box" data-share-title="${safe(title)}" data-share-url="${safe(url)}"><span>Condividi:</span><button type="button" data-share="facebook" title="Facebook">f</button><button type="button" data-share="instagram" title="Instagram">◎</button><button type="button" data-share="tiktok" title="TikTok">♪</button><button type="button" data-share="linkedin" title="LinkedIn">in</button><button type="button" data-share="threads" title="Threads">@</button><button type="button" data-share="native" title="Condividi / copia link">↗</button></div>`;
+    return `<div class="share-box" data-share-title="${safe(title)}" data-share-url="${safe(url)}"><span>Condividi:</span><button type="button" data-share="facebook" class="share-facebook" title="Facebook" aria-label="Condividi su Facebook"><i class="fa-brands fa-facebook-f"></i></button><button type="button" data-share="instagram" class="share-instagram" title="Instagram" aria-label="Condividi su Instagram"><i class="fa-brands fa-instagram"></i></button><button type="button" data-share="tiktok" class="share-tiktok" title="TikTok" aria-label="Condividi su TikTok"><i class="fa-brands fa-tiktok"></i></button><button type="button" data-share="linkedin" class="share-linkedin" title="LinkedIn" aria-label="Condividi su LinkedIn"><i class="fa-brands fa-linkedin-in"></i></button><button type="button" data-share="threads" class="share-threads" title="Threads" aria-label="Condividi su Threads"><i class="fa-brands fa-threads"></i></button><button type="button" data-share="copy" class="share-copy" title="Copia link evento/news"><i class="fa-solid fa-link"></i><span>Copia link</span></button></div>`;
   };
 
   function decorateShares(root){
@@ -175,7 +183,7 @@ document.querySelectorAll('[data-plan]').forEach(link=>link.addEventListener('cl
   document.addEventListener('click',function(ev){
     const b=ev.target.closest('[data-share]');if(!b)return;const box=b.closest('[data-share-title]');if(!box)return;
     const title=box.dataset.shareTitle||document.title,url=box.dataset.shareUrl||location.href,platform=b.dataset.share;
-    if(platform==='native'){if(navigator.share)navigator.share({title,url}).catch(()=>{});else navigator.clipboard?.writeText(url).then(()=>alert('Link copiato.'));return}
+    if(platform==='copy'){copyShareLink(url,b);return}
     shareUrl(platform,title,url);
   });
 })();
