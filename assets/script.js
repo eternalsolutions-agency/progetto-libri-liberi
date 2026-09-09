@@ -110,3 +110,72 @@ document.querySelectorAll('[data-plan]').forEach(link=>link.addEventListener('cl
   gallery.querySelectorAll('img').forEach(img=>img.addEventListener('click',()=>{lightbox.querySelector('img').src=img.src;lightbox.classList.add('open')}));
  }catch(e){/* fallback statico intenzionale */}
 })();
+
+/* === Privacy / Cookie consent + notifiche download + social share === */
+(function(){
+  const CONSENT_KEY='pll_cookie_consent_v1';
+  const GA_ID='G-SRC3PWB6NZ';
+
+  window.pllNotifyActivity=function(payload){
+    try{
+      return fetch('/api/activity-notify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload||{}),keepalive:true}).catch(()=>null);
+    }catch(e){return Promise.resolve(null)}
+  };
+
+  function loadAnalytics(){
+    if(window.__pllGaLoaded)return; window.__pllGaLoaded=true;
+    const s=document.createElement('script');s.async=true;s.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(GA_ID);document.head.appendChild(s);
+    window.dataLayer=window.dataLayer||[];window.gtag=function(){dataLayer.push(arguments)};gtag('js',new Date());gtag('config',GA_ID,{anonymize_ip:true});
+  }
+  function applyConsent(value){ if(value==='all') loadAnalytics(); }
+  function closeBanner(){document.getElementById('pllCookieBanner')?.remove()}
+  function saveConsent(value){localStorage.setItem(CONSENT_KEY,value);applyConsent(value);closeBanner()}
+  function showBanner(){
+    if(document.getElementById('pllCookieBanner'))return;
+    const el=document.createElement('div');el.id='pllCookieBanner';el.className='cookie-banner';el.innerHTML=`<div class="cookie-banner-inner"><div><strong>🍪 Cookie e privacy</strong><p>Usiamo cookie tecnici necessari e, solo con il tuo consenso, Google Analytics per capire come viene utilizzato il sito.</p><div class="cookie-links"><a href="cookie-policy.html">Cookie Policy</a><a href="privacy.html">Privacy Policy</a></div></div><div class="cookie-actions"><button type="button" class="btn btn-light" data-cookie="essential">Solo necessari</button><button type="button" class="btn btn-primary" data-cookie="all">Accetta tutti</button></div></div>`;
+    document.body.appendChild(el);
+    el.querySelector('[data-cookie="essential"]').onclick=()=>saveConsent('essential');
+    el.querySelector('[data-cookie="all"]').onclick=()=>saveConsent('all');
+  }
+  const consent=localStorage.getItem(CONSENT_KEY);if(consent)applyConsent(consent);else if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',showBanner);else showBanner();
+  window.pllResetCookieConsent=function(){localStorage.removeItem(CONSENT_KEY);location.reload()};
+
+  document.addEventListener('click',function(ev){
+    const a=ev.target.closest('a'); if(!a)return;
+    const href=(a.getAttribute('href')||'').trim();
+    const downloadable=a.hasAttribute('download') || /\.(pdf|docx?|xlsx?|pptx?|zip|csv)(\?|#|$)/i.test(href);
+    if(downloadable){
+      const file=(a.getAttribute('download')||href.split('/').pop()||href).slice(0,400);
+      window.pllNotifyActivity({tipo:'download',elemento:file,pagina:location.href,note:(a.textContent||'').trim().slice(0,300)});
+    }
+  },true);
+
+  function shareUrl(platform,title,url){
+    const u=encodeURIComponent(url),t=encodeURIComponent(title+' '+url);
+    const map={facebook:`https://www.facebook.com/sharer/sharer.php?u=${u}`,linkedin:`https://www.linkedin.com/sharing/share-offsite/?url=${u}`,threads:`https://www.threads.net/intent/post?text=${t}`};
+    if(map[platform])window.open(map[platform],'_blank','noopener,noreferrer,width=720,height=620');
+    else if(navigator.share)navigator.share({title,text:title,url}).catch(()=>{});
+    else navigator.clipboard?.writeText(url).then(()=>alert('Link copiato. Apri '+(platform==='instagram'?'Instagram':'TikTok')+' e incollalo nel contenuto.'));
+  }
+  window.pllShareMarkup=function(title,url){
+    const safe=(s)=>String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `<div class="share-box" data-share-title="${safe(title)}" data-share-url="${safe(url)}"><span>Condividi:</span><button type="button" data-share="facebook" title="Facebook">f</button><button type="button" data-share="instagram" title="Instagram">◎</button><button type="button" data-share="tiktok" title="TikTok">♪</button><button type="button" data-share="linkedin" title="LinkedIn">in</button><button type="button" data-share="threads" title="Threads">@</button><button type="button" data-share="native" title="Condividi / copia link">↗</button></div>`;
+  };
+
+  function decorateShares(root){
+    (root||document).querySelectorAll('[data-share-auto]').forEach(el=>{
+      if(el.dataset.shareReady)return;el.dataset.shareReady='1';
+      const title=el.dataset.shareTitle||el.querySelector('h1,h2,h3')?.textContent||document.title;
+      const url=el.dataset.shareUrl||location.href;
+      el.insertAdjacentHTML('beforeend',window.pllShareMarkup(title,url));
+    });
+  }
+  window.pllDecorateShares=decorateShares;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>decorateShares(document));else decorateShares(document);
+  document.addEventListener('click',function(ev){
+    const b=ev.target.closest('[data-share]');if(!b)return;const box=b.closest('[data-share-title]');if(!box)return;
+    const title=box.dataset.shareTitle||document.title,url=box.dataset.shareUrl||location.href,platform=b.dataset.share;
+    if(platform==='native'){if(navigator.share)navigator.share({title,url}).catch(()=>{});else navigator.clipboard?.writeText(url).then(()=>alert('Link copiato.'));return}
+    shareUrl(platform,title,url);
+  });
+})();
