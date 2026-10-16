@@ -1,8 +1,75 @@
 <!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Accedi | Progetto Libri Liberi</title><link rel="stylesheet" href="assets/style.css"><style>
 .member-shell{max-width:1040px;margin:auto}.auth-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:26px;align-items:start}.auth-card{padding:28px}.auth-card input,.auth-card select{width:100%;box-sizing:border-box;margin:0 0 12px;padding:13px 14px;border:1px solid #ddcfbf;border-radius:12px;background:#fff}.auth-note{font-size:.86rem;opacity:.72;line-height:1.55}.plan-picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:15px 0}.plan-choice{border:1px solid #ddcfbf;border-radius:14px;padding:13px;cursor:pointer;background:#fff}.plan-choice.active{outline:2px solid #89532f;background:#fff9f1}.member-status{margin-top:12px;font-weight:700}.member-status.error{color:#a33}.member-status.ok{color:#28653f}.member-hero{padding:28px;border-radius:22px;background:#f7efe4}.member-hero h1{margin-top:8px}.dashboard-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}.dash-card{padding:20px}.locked{opacity:.6}.plan-pill{display:inline-block;padding:7px 11px;border-radius:999px;background:#e8f2ea;color:#24593a;font-weight:800;font-size:.8rem}.account-bar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:20px}
 @media(max-width:760px){.auth-grid,.dashboard-grid{grid-template-columns:1fr}.plan-picker{grid-template-columns:1fr}.account-bar{align-items:flex-start;flex-direction:column}}
-</style></head><body><div data-include="_nav.html"></div><main class="section"><div class="container member-shell"><div class="auth-grid"><section class="member-hero"><span class="eyebrow dark">Area riservata</span><h1>Bentornato.</h1><p>Accedi per vedere il tuo piano e i contenuti disponibili per il tuo account.</p></section><form id="loginForm" class="card auth-card"><input id="loginEmail" type="email" placeholder="Email" required><input id="loginPassword" type="password" placeholder="Password" required><button class="btn btn-primary" type="submit">Accedi</button><div id="loginStatus" class="member-status"></div><p class="auth-note">Non hai ancora un account? <a href="registrati.html">Registrati</a></p></form></div></div></main><div data-include="_footer.html"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>const SUPABASE_URL='https://axudbwobzmmrqpdnbamp.supabase.co',SUPABASE_KEY='sb_publishable_JHJBoonYn5HFxERyv-RWKA_oKpYsV7W';const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+</style></head><body><div data-include="_nav.html"></div><main class="section"><div class="container member-shell"><div class="auth-grid"><section class="member-hero"><span class="eyebrow dark">Area riservata</span><h1>Bentornato.</h1><p>Accedi per vedere il tuo piano e i contenuti disponibili per il tuo account.</p></section><form id="loginForm" class="card auth-card"><input aria-label="Email" autocomplete="username" id="loginEmail" type="email" placeholder="Email" required><input aria-label="Password" autocomplete="current-password" id="loginPassword" type="password" placeholder="Password" required><button class="btn btn-primary" type="submit">Accedi</button><div id="loginStatus" class="member-status" role="status" aria-live="polite"></div><p><button id="forgotPassword" type="button" class="btn">Password dimenticata?</button></p><p class="auth-note">Non hai ancora un account? <a href="registrati.html">Registrati</a></p></form></div></div></main><div data-include="_footer.html"></div><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>const SUPABASE_URL='https://axudbwobzmmrqpdnbamp.supabase.co',SUPABASE_KEY='sb_publishable_JHJBoonYn5HFxERyv-RWKA_oKpYsV7W';const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 async function isAdmin(user){if(!user)return false;const {data,error}=await db.from('admin_users').select('user_id').eq('user_id',user.id).maybeSingle();return !error&&!!data}
-(async()=>{const {data:{session}}=await db.auth.getSession();if(session){if(await isAdmin(session.user)){location.href='admin/';return}location.href='area-riservata.html';return}if(new URLSearchParams(location.search).get('confermato')){loginStatus.textContent='Email confermata. Ora puoi accedere.';loginStatus.className='member-status ok'}})();
-loginForm.onsubmit=async e=>{e.preventDefault();loginStatus.textContent='Accesso…';const {error}=await db.auth.signInWithPassword({email:loginEmail.value.trim(),password:loginPassword.value});if(error){loginStatus.textContent='Email o password non corrette, oppure email non ancora confermata.';loginStatus.className='member-status error';return}const {data:{session}}=await db.auth.getSession();if(session&&await isAdmin(session.user)){location.href='admin/';return}const meta=session?.user?.user_metadata||{};const {data:p}=await db.from('profili').select('piano,stato').eq('id',session.user.id).maybeSingle();if(p?.stato==='in_attesa'&&['sostenitore','partner','sponsor'].includes(meta.piano_richiesto))location.href='attiva-piano.html';else location.href='area-riservata.html'};
+
+const form=document.getElementById('loginForm'),email=document.getElementById('loginEmail'),password=document.getElementById('loginPassword'),status=document.getElementById('loginStatus'),forgot=document.getElementById('forgotPassword'),submit=form.querySelector('[type="submit"]');
+const query=new URLSearchParams(location.search),hash=new URLSearchParams(location.hash.slice(1));
+let recovery=query.has('recupero')||hash.get('type')==='recovery';
+function show(message,ok=false){status.textContent=message;status.className='member-status '+(ok?'ok':'error')}
+function authError(error){
+ const code=error?.code||'';
+ if(code==='invalid_credentials')return 'Email o password non corrette. Controlla i dati oppure usa “Password dimenticata?”.';
+ if(code==='email_not_confirmed')return 'Devi prima confermare la tua email. Controlla anche la cartella spam.';
+ if(error?.status===429||code.includes('rate_limit'))return 'Troppi tentativi. Attendi qualche minuto prima di riprovare.';
+ if(error?.status>=500)return 'Il servizio di accesso non è disponibile al momento. Riprova tra poco.';
+ if(error?.name==='AuthRetryableFetchError'||error instanceof TypeError)return 'Impossibile raggiungere il servizio. Controlla la connessione e riprova.';
+ if(code==='otp_expired')return 'Il link è scaduto o è già stato utilizzato. Richiedi un nuovo recupero password.';
+ if(code==='weak_password')return 'La password non soddisfa i requisiti di sicurezza. Scegline una più lunga e complessa.';
+ if(code==='same_password')return 'Scegli una password diversa da quella precedente.';
+ return 'Operazione non riuscita. Riprova tra poco. Se il problema continua, contattaci.'+(code?' Codice: '+code:'');
+}
+function recoveryForm(){
+ recovery=true;email.hidden=true;email.required=false;forgot.hidden=true;
+ password.value='';password.minLength=8;password.autocomplete='new-password';password.placeholder='Nuova password (minimo 8 caratteri)';
+ if(!document.getElementById('passwordConfirm')){
+ const confirm=document.createElement('input');confirm.id='passwordConfirm';confirm.type='password';confirm.required=true;confirm.minLength=8;confirm.autocomplete='new-password';confirm.placeholder='Conferma nuova password';confirm.setAttribute('aria-label','Conferma nuova password');password.after(confirm);
+ }
+ submit.textContent='Salva nuova password';
+ document.querySelector('.member-hero h1').textContent='Scegli una nuova password';
+ document.querySelector('.member-hero p').textContent='Inserisci e conferma la nuova password del tuo account.';
+}
+if(recovery)recoveryForm();
+db.auth.onAuthStateChange(event=>{if(event==='PASSWORD_RECOVERY'&&!recovery)recoveryForm()});
+(async()=>{
+ try{
+ const {data:{session},error}=await db.auth.getSession();if(error)throw error;
+ if(hash.get('error')||query.get('error')){show('Link non valido o scaduto. Torna alla pagina Accedi e richiedi un nuovo recupero password.');return}
+ if(recovery){if(!session)show('Link di recupero non valido o scaduto. Richiedine uno nuovo dalla pagina Accedi.');return}
+ if(session){location.href=await isAdmin(session.user)?'admin/':'area-riservata.html';return}
+ if(query.has('confermato'))show('Email confermata. Ora puoi accedere.',true);
+ }catch(error){show(authError(error))}
+})();
+forgot.onclick=async()=>{
+ if(!email.reportValidity())return;
+ forgot.disabled=true;show('Invio della richiesta…',true);
+ try{
+ const {error}=await db.auth.resetPasswordForEmail(email.value.trim(),{redirectTo:location.origin+'/accedi.html?recupero=1'});
+ if(error)throw error;
+ show('Se l’indirizzo è associato a un account, riceverai un’email per scegliere una nuova password. Controlla anche lo spam.',true);
+ }catch(error){show(authError(error))}finally{forgot.disabled=false}
+};
+form.onsubmit=async event=>{
+ event.preventDefault();submit.disabled=true;forgot.disabled=true;
+ try{
+ if(recovery){
+ if(password.value!==document.getElementById('passwordConfirm').value){show('Le due password non coincidono.');return}
+ const {data:{session}}=await db.auth.getSession();
+ if(!session){show('Link di recupero non valido o scaduto. Richiedine uno nuovo dalla pagina Accedi.');return}
+ const {error}=await db.auth.updateUser({password:password.value});if(error)throw error;
+ await db.auth.signOut({scope:'local'});
+ password.value='';document.getElementById('passwordConfirm').value='';
+ show('Password aggiornata. Torna ad Accedi per entrare con la nuova password.',true);
+ submit.hidden=true;const back=document.createElement('a');back.href='accedi.html';back.textContent='Torna ad Accedi';status.after(back);history.replaceState(null,'','accedi.html');return;
+ }
+ show('Accesso…',true);
+ const {data,error}=await db.auth.signInWithPassword({email:email.value.trim(),password:password.value});if(error)throw error;
+ const session=data.session;if(!session)throw new Error('Session unavailable');
+ if(await isAdmin(session.user)){location.href='admin/';return}
+ const meta=session.user.user_metadata||{};
+ const {data:p}=await db.from('profili').select('piano,stato').eq('id',session.user.id).maybeSingle();
+ location.href=p?.stato==='in_attesa'&&['sostenitore','partner','sponsor'].includes(meta.piano_richiesto)?'attiva-piano.html':'area-riservata.html';
+ }catch(error){show(authError(error))}finally{submit.disabled=false;forgot.disabled=false}
+};
 </script><script src="assets/script.js"></script></body></html>
